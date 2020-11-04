@@ -19,15 +19,15 @@ class Tribe_ACF_Post_List {
 			'url'     => plugin_dir_url( __FILE__ ),
 			'path'    => plugin_dir_path( __FILE__ ),
 		];
-		// v5
+
 		add_action( 'acf/include_field_types', function () use ( $settings ) {
 			new \Tribe\ACF_Post_List\ACF_Post_List_Field_v5( $settings );
 		} );
-//		add_action( 'acf/register_fields', [ $this, 'include_field' ] ); // v4
 	}
 
 }
 
+add_action( 'plugins_loaded', function () {
+	new Tribe_ACF_Post_List();
+} );
 
-// initialize
-new Tribe_ACF_Post_List();
