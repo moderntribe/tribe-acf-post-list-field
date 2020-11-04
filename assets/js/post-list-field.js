@@ -11,7 +11,7 @@
         const data_obj = JSON.parse(data_obj_field.val()) || {};
 
         $field.on('change', '.acf-input select, .acf-input input, .acf-input textarea', function (e) {
-            if ($(this,).parents('.acf-field-repeater').length === 1) {
+            if ($(this).parents('.acf-field-repeater').length === 1) {
                 //If this is a repeater... TODO: Abstract this to a function/method?
                 let repeater_field = $(this).parents('.acf-field-repeater').first();
                 let repeater_name = repeater_field.data('key');

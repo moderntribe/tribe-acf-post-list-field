@@ -449,6 +449,10 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	*  @return	$value
 	*/
 	public function load_value( $value, $post_id, $field ) {
+		if ( ! $value ) {
+			return $this->value_defaults; // preset the field values with our defaults.
+		}
+
 		return json_decode( $value, true );
 	}
 
