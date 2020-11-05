@@ -42,7 +42,7 @@
         $field.on('change', '[data-key="query_post_types"] .acf-input select', function (e) {
             update_taxonomy_options(e, $field);
         });
-        $('[data-key="query_post_types"] .acf-input select').trigger('ready');
+        $('[data-key="query_post_types"] .acf-input select').trigger('change'); //trigger an update if post type value is changed.
     };
 
     let get_value_of_link = function ($field) {
