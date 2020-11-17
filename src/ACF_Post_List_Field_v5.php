@@ -535,11 +535,12 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 					'key'   => '',
 				],
 				[
-					'label'     => __( 'Post Selection', 'tribe' ),
-					'name'      => self::MANUAL_POST,
-					'key'       => self::MANUAL_POST,
-					'type'      => 'post_object',
-					'post_type' => array_keys( $this->get_public_post_types() ),
+					'label'      => __( 'Post Selection', 'tribe' ),
+					'name'       => self::MANUAL_POST,
+					'key'        => self::MANUAL_POST,
+					'type'       => 'post_object',
+					'post_type'  => array_keys( $this->get_public_post_types() ),
+					'allow_null' => true,
 				],
 				[
 					'label'        => __( 'Create or Override Content', 'tribe' ),
