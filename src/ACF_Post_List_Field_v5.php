@@ -188,7 +188,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 		//QUERY Type option
 		if ( $field[ self::AVAILABLE_TYPES ] === self::AVAILABLE_TYPES_BOTH ) {
 			acf_render_field_wrap(
-				$this->get_query_types_config( $field[ 'value' ][ self::QUERY_TYPE ] ),
+				$this->get_query_types_config( $field ),
 				'div'
 			);
 		}
