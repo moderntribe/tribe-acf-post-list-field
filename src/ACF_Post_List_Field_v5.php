@@ -70,7 +70,12 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 */
 	protected $taxonomies_allowed = [];
 
-	public function __construct( $settings ) {
+	/**
+	 * ACF_Post_List_Field_v5 constructor.
+	 *
+	 * @param  array  $settings
+	 */
+	public function __construct( array $settings ) {
 		$this->name     = 'tribe_post_list';
 		$this->label    = __( 'Post List', 'tribe' );
 		$this->category = 'relational';
@@ -87,14 +92,14 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 		parent::__construct();
 	}
 
-	/*
-	*  Create extra settings for your field. These are visible when editing a field
-	*
-	*  @action acf/render_field_settings
-	*
-	*  @param	$field (array) the $field being edited
-	*/
-	public function render_field_settings( $field ) {
+	/**
+	 * Create extra settings for your field. These are visible when editing a field
+	 *
+	 * @action acf/render_field_settings
+	 *
+	 * @param  array  $field  The $field being edited
+	 */
+	public function render_field_settings( $field ): void {
 
 		acf_render_field_setting( $field, [
 			'label'        => __( 'Available Types', 'tribe' ),
@@ -169,7 +174,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 *
 	 * @param  array  $field  The $field being rendered
 	 */
-	public function render_field( $field ) {
+	public function render_field( $field ): void {
 		$this->post_types_allowed = array_filter( $this->get_public_post_types(), function ( $cpt_key ) use ( $field ) {
 			return in_array( $cpt_key, (array) $field[ self::POST_TYPES_ALLOWED ] );
 		}, ARRAY_FILTER_USE_KEY );
@@ -245,7 +250,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 *
 	 * @return mixed The modified value
 	 */
-	function format_value( $value, $post_id, $field ) {
+	public function format_value( $value, $post_id, $field ) {
 		if ( empty( $value ) ) {
 			return $value;
 		}
@@ -258,6 +263,8 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	}
 
 	/**
+	 * Returns posts selected by the user.
+	 *
 	 * @return array
 	 */
 	private function get_manually_selected_posts( $value ): array {
@@ -295,8 +302,8 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	}
 
 	/**
-	 * @param        $values
-	 * @param  null  $post_array
+	 * @param  array  $values
+	 * @param  array  $post_array
 	 *
 	 * @return array
 	 */
@@ -334,9 +341,9 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	}
 
 	/**
-	 * @param $value
+	 * @param  array  $value
 	 *
-	 * @return array []
+	 * @return array
 	 */
 	private function get_posts_from_query( $value ): array {
 		$post_types = (array) ( $value[ ACF_Post_List_Field_v5::QUERY_POST_TYPES ] ?? [] );
@@ -485,7 +492,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	/**
 	 * Ajax response to load taxonomy options
 	 */
-	public function get_taxonomies_options_ajax() {
+	public function get_taxonomies_options_ajax(): void {
 		// we can use the acf nonce to verify
 		if ( ! wp_verify_nonce( $_POST['nonce'], 'acf_nonce' ) ) {
 			die();
