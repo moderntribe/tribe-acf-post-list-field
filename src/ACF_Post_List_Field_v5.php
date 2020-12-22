@@ -328,10 +328,12 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	}
 
 	/**
-	 * @return []
+	 * @param $value
+	 *
+	 * @return array []
 	 */
 	private function get_posts_from_query( $value ): array {
-		$post_types = (array) $value[ ACF_Post_List_Field_v5::QUERY_POST_TYPES ] ?? [];
+		$post_types = (array) ( $value[ ACF_Post_List_Field_v5::QUERY_POST_TYPES ] ?? [] );
 		$tax_query  = $this->get_tax_query_args( $value );
 		$args       = [
 			'post_type'      => $post_types,
