@@ -6,6 +6,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * The Tribe Post List Field.
+ *
+ * @package Tribe\ACF_Post_List
+ */
 class ACF_Post_List_Field_v5 extends \acf_field {
 
 	// Admin options
@@ -454,10 +459,12 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 * @return array
 	 */
 	private function get_public_post_types(): array {
-		$post_types        = get_post_types( [
+		$post_types = get_post_types( [
 			'public' => true,
 		], 'objects' );
+
 		$post_type_options = [];
+
 		foreach ( $post_types as $slug => $pt_object ) {
 			$post_type_options[ $slug ] = $pt_object->label;
 		}
@@ -505,6 +512,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 		$taxonomies           = array_filter( $taxonomies, function ( $tax_slug ) use ( $available_taxonomies ) {
 			return in_array( $tax_slug, (array) $available_taxonomies );
 		}, ARRAY_FILTER_USE_KEY );
+
 		foreach ( $taxonomies as $slug => $tax_object ) {
 			$taxonomies_options[ $slug ] = $tax_object->label;
 		}
