@@ -2,6 +2,10 @@
 
 namespace Tribe\ACF_Post_List;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 class ACF_Post_List_Field_v5 extends \acf_field {
 
 	//Admin options
@@ -66,7 +70,6 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	protected $taxonomies_allowed = [];
 
 	public function __construct( $settings ) {
-		add_action( 'wp_ajax_load_taxonomy_choices', [ $this, 'get_taxonomies_options_ajax' ] );
 		$this->name     = 'tribe_post_list';
 		$this->label    = __( 'Post List', 'tribe' );
 		$this->category = 'relational';
