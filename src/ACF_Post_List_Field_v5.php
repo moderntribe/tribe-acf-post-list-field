@@ -162,14 +162,13 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 
 	}
 
-	/*
-	*  Create the HTML interface for your field
-	*  @param	$field (array) the $field being rendered
-	*
-	*  @action acf/render_field
-	*
-	*  @param	$field (array) the $field being edited
-	*/
+	/**
+	 * Create the HTML interface for your field
+	 *
+	 * @action acf/render_field
+	 *
+	 * @param  array  $field  The $field being rendered
+	 */
 	public function render_field( $field ) {
 		$this->post_types_allowed = array_filter( $this->get_public_post_types(), function ( $cpt_key ) use ( $field ) {
 			return in_array( $cpt_key, (array) $field[ self::POST_TYPES_ALLOWED ] );
@@ -216,17 +215,17 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 		}
 	}
 
-
-	/*
-	*  This filter is applied to the $value after it is loaded from the db
-	*
-	*  @filter load_value
-	*
-	*  @param	$value (mixed) the value found in the database
-	*  @param	$post_id (mixed) the $post_id from which the value was loaded
-	*  @param	$field (array) the field array holding all the field options
-	*  @return	$value
-	*/
+	/**
+	 *  This filter is applied to the $value after it is loaded from the db
+	 *
+	 * @filter    load_value
+	 *
+	 * @param  mixed  $value    The value found in the database
+	 * @param  mixed  $post_id  The $post_id from which the value was loaded
+	 * @param  array  $field    The field array holding all the field options
+	 *
+	 * @return mixed The modified value
+	 */
 	public function load_value( $value, $post_id, $field ) {
 		if ( ! $value ) {
 			return $this->value_defaults; // preset the field values with our defaults.
@@ -235,17 +234,17 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 		return json_decode( $value, true );
 	}
 
-
-	/*
-	*  This filter is applied to the $value after it is loaded from the db and before it is returned to the template
-	*
-	*  @filter	 format_value
-	*  @param	$value (mixed) the value which was loaded from the database
-	*  @param	$post_id (mixed) the $post_id from which the value was loaded
-	*  @param	$field (array) the field array holding all the field options
-	*
-	*  @return	$value (mixed) the modified value
-	*/
+	/**
+	 * This filter is applied to the $value after it is loaded from the db and before it is returned to the template
+	 *
+	 * @filter     format_value
+	 *
+	 * @param  mixed  $value    The value which was loaded from the database
+	 * @param  mixed  $post_id  The $post_id from which the value was loaded
+	 * @param  array  $field    The field array holding all the field options
+	 *
+	 * @return mixed The modified value
+	 */
 	function format_value( $value, $post_id, $field ) {
 		if ( empty( $value ) ) {
 			return $value;
@@ -427,13 +426,13 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	}
 
 
-	/*
-	*  This action is called in the admin_enqueue_scripts action on the edit screen where your field is created.
-	*  Use this action to add CSS + JavaScript to assist your render_field() action.
-	*
-	*  @action admin_enqueue_scripts
-	*/
-	function input_admin_head() {
+	/**
+	 *  This action is called in the admin_enqueue_scripts action on the edit screen where your field is created.
+	 *  Use this action to add CSS + JavaScript to assist your render_field() action.
+	 *
+	 * @action admin_enqueue_scripts
+	 */
+	public function input_admin_head() {
 		$url     = $this->settings['url'];
 		$version = $this->settings['version'];
 
