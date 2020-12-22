@@ -479,12 +479,12 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 */
 	public function get_taxonomies_options_ajax() {
 		// we can use the acf nonce to verify
-		if ( ! wp_verify_nonce( $_POST[ 'nonce' ], 'acf_nonce' ) ) {
+		if ( ! wp_verify_nonce( $_POST['nonce'], 'acf_nonce' ) ) {
 			die();
 		}
 
-		$post_types           = $_POST[ 'post_types' ] ?? $this->get_public_post_types();
-		$available_taxonomies = $_POST[ 'available_taxonomies' ] ?? [];
+		$post_types           = $_POST['post_types'] ?? $this->get_public_post_types();
+		$available_taxonomies = $_POST['available_taxonomies'] ?? [];
 		$taxonomies           = get_object_taxonomies( $post_types, 'object' );
 		$taxonomies_options   = [];
 		$taxonomies           = array_filter( $taxonomies, function ( $tax_slug ) use ( $available_taxonomies ) {
@@ -495,13 +495,12 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 		}
 		/**
 		 * Provided options for post types
-		 * @para array $options
+		 *
+		 * @param array $options
 		 */
 		$taxonomies_options = apply_filters( 'tribe/acf_post_list/taxonomies', $taxonomies_options );
 
-		echo wp_json_encode( $taxonomies_options );
-		exit;
-
+		wp_send_json( $taxonomies_options );
 	}
 
 	/**
