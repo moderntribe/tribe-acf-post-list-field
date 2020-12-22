@@ -368,7 +368,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 * @return array
 	 */
 	private function get_tax_query_args( array $value ): array {
-		if ( ! $value[ self::QUERY_TAXONOMIES ] ) {
+		if ( empty( $value[ self::QUERY_TAXONOMIES ] ) ) {
 			return [];
 		}
 		$tax_and_terms = [];
