@@ -8,24 +8,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class ACF_Post_List_Field_v5 extends \acf_field {
 
-	//Admin options
+	// Admin options
 	public const AVAILABLE_TYPES        = 'available_types';
 	public const AVAILABLE_TYPES_BOTH   = 'both';
 	public const AVAILABLE_TYPES_MANUAL = 'manual';
 	public const AVAILABLE_TYPES_QUERY  = 'query';
 
-	//Common Options
+	// Common Options
 	public const LIMIT_MIN          = 'limit_min';
 	public const LIMIT_MAX          = 'limit_max';
 	public const POST_TYPES_ALLOWED = 'post_types';
 
-	//Manual Options
+	// Manual Options
 	public const ALLOW_OVERRIDE = 'allow_override';
 
-	//Auto Options
+	// Auto Options
 	public const TAXONOMIES_ALLOWED = 'taxonomies';
 
-	//rendered Options
+	// Rendered Options
 	public const QUERY_TYPE        = 'query_type';
 	public const QUERY_TYPE_AUTO   = 'query_type_auto';
 	public const QUERY_TYPE_MANUAL = 'query_type_manual';
@@ -39,7 +39,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	public const MANUAL_CTA       = 'manual_cta';
 	public const MANUAL_THUMBNAIL = 'manual_thumbnail';
 
-	//Query Fields
+	// Query Fields
 	public const QUERY_GROUP      = 'query_group';
 	public const QUERY_LIMIT      = 'query_limit';
 	public const QUERY_TAXONOMIES = 'query_taxonomy_terms';
