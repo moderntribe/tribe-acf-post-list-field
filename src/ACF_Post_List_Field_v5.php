@@ -183,17 +183,17 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 			return in_array( $cpt_key, (array) $field[ self::TAXONOMIES_ALLOWED ] );
 		}, ARRAY_FILTER_USE_KEY );
 
-		//This field is needed for acf to see saving this field as a valid request. We're mostly populating this field
+		// This field is needed for acf to see saving this field as a valid request. We're mostly populating this field
 		// with javascript when a form field is changed.
 		?>
         <input type="hidden"
                name="<?php echo esc_attr( $field['name'] ) ?>"
                data-allowed_taxonomies="<?php echo esc_attr( wp_json_encode( $field[ self::TAXONOMIES_ALLOWED ] ) ); ?>"
-               value=" <?php echo esc_attr( wp_json_encode( $field['value'] ) ) ?>"
+               value="<?php echo esc_attr( wp_json_encode( $field['value'] ) ) ?>"
                class="js-post-list-data"
         />
 		<?
-		//QUERY Type option
+		// QUERY Type option
 		if ( $field[ self::AVAILABLE_TYPES ] === self::AVAILABLE_TYPES_BOTH ) {
 			acf_render_field_wrap(
 				$this->get_query_types_config( $field ),
@@ -201,7 +201,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 			);
 		}
 
-		//MANUAL Fields
+		// MANUAL Fields
 		if ( $field[ self::AVAILABLE_TYPES ] === self::AVAILABLE_TYPES_BOTH
 		     || $field[ self::AVAILABLE_TYPES ] === self::AVAILABLE_TYPES_MANUAL
 		) {
@@ -210,7 +210,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 				'div'
 			);
 		}
-		//AUTO Fields
+		// AUTO Fields
 		if ( $field[ self::AVAILABLE_TYPES ] === self::AVAILABLE_TYPES_QUERY
 		     || $field[ self::AVAILABLE_TYPES ] === self::AVAILABLE_TYPES_BOTH
 		) {
