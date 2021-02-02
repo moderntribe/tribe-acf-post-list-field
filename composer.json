@@ -1,18 +1,21 @@
 {
-    "name": "moderntribe/tribe-acf-post-list-field",
-    "description": "A post list field type for Advanced Custom Fields",
-    "version": "1.0.0",
-    "type": "project",
-    "authors": [
-        {
-            "name": "Modern Tribe",
-            "email": "admin@tri.be"
-        }
-    ],
-    "require": {},
-    "autoload": {
-        "psr-4": {
-            "Tribe\\ACF_Post_List\\": "src"
-        }
+  "name": "moderntribe/tribe-acf-post-list-field",
+  "description": "A post list field type for Advanced Custom Fields",
+  "version": "1.0.0",
+  "type": "wordpress-plugin",
+  "authors": [
+    {
+      "name": "Modern Tribe",
+      "email": "admin@tri.be"
     }
+  ],
+  "require": {
+    "php": "^7.2"
+  },
+  "require-dev": {},
+  "autoload": {
+    "psr-4": {
+      "Tribe\\ACF_Post_List\\": "src"
+    }
+  }
 }

@@ -8,26 +8,25 @@ Author: Modern Tribe
 Author URI: https://tri.be
 */
 
-require_once 'vendor/autoload.php';
-
-
-class Tribe_ACF_Post_List {
-
-	function __construct() {
-		$settings = [
-			'version' => '1.0.0',
-			'url'     => plugin_dir_url( __FILE__ ),
-			'path'    => plugin_dir_path( __FILE__ ),
-		];
-		// v5
-		add_action( 'acf/include_field_types', function () use ( $settings ) {
-			new \Tribe\ACF_Post_List\ACF_Post_List_Field_v5( $settings );
-		} );
-//		add_action( 'acf/register_fields', [ $this, 'include_field' ] ); // v4
-	}
-
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
+require_once 'vendor/autoload.php';
 
-// initialize
-new Tribe_ACF_Post_List();
+function tribe_acf_post_list(): void {
+	$settings = [
+		'version' => '1.0.0',
+		'url'     => plugin_dir_url( __FILE__ ),
+		'path'    => plugin_dir_path( __FILE__ ),
+	];
+
+	$instance = new \Tribe\ACF_Post_List\ACF_Post_List_Field_v5( $settings );
+
+	add_action( 'wp_ajax_load_taxonomy_choices', [ $instance, 'get_taxonomies_options_ajax' ] );
+}
+
+add_action( 'plugins_loaded', static function (): void {
+	tribe_acf_post_list();
+} );
+
