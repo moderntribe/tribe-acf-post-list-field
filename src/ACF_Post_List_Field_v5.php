@@ -426,7 +426,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 			'link'      => [
 				'url'    => get_the_permalink(),
 				'target' => '',
-				'label'  => get_the_title(),
+				'title'  => get_the_title(),
 			],
 			'post_type' => get_post_type(),
 			'post_id'   => $_post->ID,
