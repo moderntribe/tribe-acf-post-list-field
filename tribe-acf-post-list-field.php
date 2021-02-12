@@ -3,7 +3,7 @@
 Plugin Name: Advanced Custom Fields: Tribe Post List Field
 Plugin URI: https://tri.be
 Description: A post list field type for advanced custom fields
-Version: 1.0.2
+Version: 1.0.3
 Author: Modern Tribe
 Author URI: https://tri.be
 */
@@ -12,7 +12,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-require_once 'vendor/autoload.php';
+// Support SquareOne autoloaders.
+$autoloaders = [
+	defined( 'ABSPATH' ) ? ABSPATH . '../vendor/autoload.php' : '',
+	defined( 'ABSPATH' ) ? ABSPATH . 'vendor/autoload.php' : '',
+	trailingslashit( __DIR__ ) . 'vendor/autoload.php',
+];
+
+$autoload = current( array_filter( $autoloaders, 'is_file' ) );
+
+require_once $autoload;
 
 function tribe_acf_post_list(): void {
 	$settings = [
