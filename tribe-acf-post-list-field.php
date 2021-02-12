@@ -3,7 +3,7 @@
 Plugin Name: Advanced Custom Fields: Tribe Post List Field
 Plugin URI: https://tri.be
 Description: A post list field type for advanced custom fields
-Version: 1.0.1
+Version: 1.0.2
 Author: Modern Tribe
 Author URI: https://tri.be
 */
