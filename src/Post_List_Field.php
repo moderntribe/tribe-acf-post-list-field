@@ -1,17 +1,22 @@
-<?php
+<?php declare( strict_types=1 );
 
 namespace Tribe\ACF_Post_List;
+
+use WP_Post;
+use Psr\SimpleCache\CacheInterface;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * The Tribe Post List Field.
+ * A Custom Post List Field for ACF 5.0
  *
  * @package Tribe\ACF_Post_List
  */
-class ACF_Post_List_Field_v5 extends \acf_field {
+class Post_List_Field extends \acf_field {
+
+	public const NAME = 'tribe_post_list';
 
 	// Admin options
 	public const AVAILABLE_TYPES        = 'available_types';
@@ -20,9 +25,10 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	public const AVAILABLE_TYPES_QUERY  = 'query';
 
 	// Common Options
-	public const LIMIT_MIN          = 'limit_min';
-	public const LIMIT_MAX          = 'limit_max';
-	public const POST_TYPES_ALLOWED = 'post_types';
+	public const LIMIT_MIN                 = 'limit_min';
+	public const LIMIT_MAX                 = 'limit_max';
+	public const POST_TYPES_ALLOWED        = 'post_types';
+	public const POST_TYPES_ALLOWED_MANUAL = 'post_types_manual';
 
 	// Manual Options
 	public const ALLOW_OVERRIDE = 'allow_override';
@@ -45,53 +51,38 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	public const MANUAL_THUMBNAIL = 'manual_thumbnail';
 
 	// Query Fields
-	public const QUERY_GROUP      = 'query_group';
 	public const QUERY_LIMIT      = 'query_limit';
 	public const QUERY_TAXONOMIES = 'query_taxonomy_terms';
 	public const QUERY_POST_TYPES = 'query_post_types';
 
-	/**
-	 * The default values for the editor fields.
-	 *
-	 * @var array
-	 */
-	protected $value_defaults = [
-		self::QUERY_TYPE  => self::QUERY_TYPE_AUTO,
-		self::QUERY_LIMIT => 2,
-	];
+
+	protected CacheInterface $cache;
 
 	/**
-	 * @var array
+	 * @var string[]
 	 */
 	protected $settings = [];
 
 	/**
-	 * @var array
-	 */
-	protected $post_types_allowed = [];
-
-	/**
-	 * @var array
-	 */
-	protected $taxonomies_allowed = [];
-
-	/**
 	 * ACF_Post_List_Field_v5 constructor.
 	 *
-	 * @param  array  $settings
+	 * @param  \Psr\SimpleCache\CacheInterface  $cache
+	 * @param  array                            $settings
 	 */
-	public function __construct( array $settings ) {
-		$this->name     = 'tribe_post_list';
-		$this->label    = __( 'Post List', 'tribe' );
+	public function __construct( CacheInterface $cache, $settings ) {
+		$this->name     = self::NAME;
+		$this->label    = __( 'Tribe Post List', 'tribe' );
 		$this->category = 'relational';
 		$this->defaults = [
-			self::AVAILABLE_TYPES    => self::AVAILABLE_TYPES_BOTH,
-			self::LIMIT_MAX          => 10,
-			self::LIMIT_MIN          => 0,
-			self::POST_TYPES_ALLOWED => [],
-			self::TAXONOMIES_ALLOWED => [],
-			self::ALLOW_OVERRIDE     => true,
+			self::AVAILABLE_TYPES           => self::AVAILABLE_TYPES_BOTH,
+			self::LIMIT_MAX                 => 10,
+			self::LIMIT_MIN                 => 0,
+			self::POST_TYPES_ALLOWED        => [],
+			self::POST_TYPES_ALLOWED_MANUAL => [],
+			self::TAXONOMIES_ALLOWED        => [],
+			self::ALLOW_OVERRIDE            => true,
 		];
+		$this->cache    = $cache;
 		$this->settings = $settings;
 		$this->add_field_groups();
 		parent::__construct();
@@ -104,7 +95,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 *
 	 * @param  array  $field  The $field being edited
 	 */
-	public function render_field_settings( $field ): void {
+	public function render_field_settings( array $field ): void {
 
 		acf_render_field_setting( $field, [
 			'label'        => __( 'Available Types', 'tribe' ),
@@ -124,6 +115,15 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 			'multiple' => true,
 			'ui'       => true,
 			'name'     => self::POST_TYPES_ALLOWED,
+			'choices'  => $this->get_public_post_types(),
+		] );
+
+		acf_render_field_setting( $field, [
+			'label'    => __( 'Post Types for Manual Query', 'tribe' ),
+			'type'     => 'select',
+			'multiple' => true,
+			'ui'       => true,
+			'name'     => self::POST_TYPES_ALLOWED_MANUAL,
 			'choices'  => $this->get_public_post_types(),
 		] );
 
@@ -169,7 +169,6 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 			'step'          => 1,
 			'name'          => self::LIMIT_MAX,
 		] );
-
 	}
 
 	/**
@@ -179,25 +178,25 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 *
 	 * @param  array  $field  The $field being rendered
 	 */
-	public function render_field( $field ): void {
-		$this->post_types_allowed = array_filter( $this->get_public_post_types(), function ( $cpt_key ) use ( $field ) {
+	public function render_field( array $field = [] ): void {
+		$post_types_allowed = array_filter( $this->get_public_post_types(), static function ( $cpt_key ) use ( $field ) {
 			return in_array( $cpt_key, (array) $field[ self::POST_TYPES_ALLOWED ] );
 		}, ARRAY_FILTER_USE_KEY );
 
-		$this->taxonomies_allowed = array_filter( $this->get_taxonomies(), function ( $cpt_key ) use ( $field ) {
+		$taxonomies = array_filter( $this->get_taxonomies(), static function ( $cpt_key ) use ( $field ) {
 			return in_array( $cpt_key, (array) $field[ self::TAXONOMIES_ALLOWED ] );
 		}, ARRAY_FILTER_USE_KEY );
 
 		// This field is needed for acf to see saving this field as a valid request. We're mostly populating this field
 		// with javascript when a form field is changed.
 		?>
-        <input type="hidden"
-               name="<?php echo esc_attr( $field['name'] ) ?>"
-               data-allowed_taxonomies="<?php echo esc_attr( wp_json_encode( $field[ self::TAXONOMIES_ALLOWED ] ) ); ?>"
-               value="<?php echo esc_attr( wp_json_encode( $field['value'] ) ) ?>"
-               class="js-post-list-data"
-        />
-		<?
+		<input type="hidden"
+			   name="<?php echo esc_attr( $field['name'] ) ?>"
+			   data-allowed_taxonomies="<?php echo esc_attr( wp_json_encode( $field[ self::TAXONOMIES_ALLOWED ] ) ); ?>"
+			   value="<?php echo esc_attr( wp_json_encode( $field['value'] ) ) ?>"
+			   class="js-post-list-data"
+		/>
+		<?php
 		// QUERY Type option
 		if ( $field[ self::AVAILABLE_TYPES ] === self::AVAILABLE_TYPES_BOTH ) {
 			acf_render_field_wrap(
@@ -208,18 +207,19 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 
 		// MANUAL Fields
 		if ( $field[ self::AVAILABLE_TYPES ] === self::AVAILABLE_TYPES_BOTH
-		     || $field[ self::AVAILABLE_TYPES ] === self::AVAILABLE_TYPES_MANUAL
+			 || $field[ self::AVAILABLE_TYPES ] === self::AVAILABLE_TYPES_MANUAL
 		) {
 			acf_render_field_wrap(
 				$this->get_manual_field_config( $field ),
 				'div'
 			);
 		}
+
 		// AUTO Fields
 		if ( $field[ self::AVAILABLE_TYPES ] === self::AVAILABLE_TYPES_QUERY
-		     || $field[ self::AVAILABLE_TYPES ] === self::AVAILABLE_TYPES_BOTH
+			 || $field[ self::AVAILABLE_TYPES ] === self::AVAILABLE_TYPES_BOTH
 		) {
-			foreach ( $this->get_auto_query_fields( $field ) as $config ) {
+			foreach ( $this->get_auto_query_fields( $post_types_allowed, $taxonomies, $field ) as $config ) {
 				acf_render_field_wrap( $config, 'div' );
 			}
 		}
@@ -238,7 +238,10 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 */
 	public function load_value( $value, $post_id, $field ) {
 		if ( ! $value ) {
-			return $this->value_defaults; // preset the field values with our defaults.
+			return [
+				self::QUERY_TYPE  => self::QUERY_TYPE_AUTO,
+				self::QUERY_LIMIT => self::LIMIT_MIN,
+			];
 		}
 
 		return json_decode( $value, true );
@@ -276,8 +279,10 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 		$manual_rows = $value[ self::MANUAL_QUERY ] ?? [];
 
 		$post_array = [];
+
 		foreach ( $manual_rows as $row ) {
 			$item = [];
+
 			if ( ! $row[ self::MANUAL_POST ] && ! $row[ self::MANUAL_TOGGLE ] ) {
 				continue; //no post and no override/custom
 			}
@@ -285,9 +290,11 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 			//Get manually selected post
 			if ( $row[ self::MANUAL_POST ] ) {
 				$manual_post = get_post( $row[ self::MANUAL_POST ] );
+
 				if ( ! $manual_post ) {
 					continue;
 				}
+
 				$item = $this->format_post( $manual_post );
 			}
 
@@ -300,6 +307,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 			if ( ! $item || ! $this->is_valid_post( $item ) ) {
 				continue;
 			}
+
 			$post_array[] = $item;
 		}
 
@@ -339,10 +347,10 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 */
 	private function is_valid_post( array $post_array ): bool {
 		return ! ( empty( $post_array['title'] )
-		           && empty( $post_array['excerpt'] )
-		           &&
-		           ! $post_array['image_id']
-		           && empty( $post_array['link'] ) );
+				   && empty( $post_array['excerpt'] )
+				   &&
+				   ! $post_array['image_id']
+				   && empty( $post_array['link'] ) );
 	}
 
 	/**
@@ -351,16 +359,19 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 * @return array
 	 */
 	private function get_posts_from_query( $value ): array {
-		$post_types = (array) ( $value[ ACF_Post_List_Field_v5::QUERY_POST_TYPES ] ?? [] );
+		$post_types = (array) ( $value[ self::QUERY_POST_TYPES ] ?? [] );
+
 		$tax_query  = $this->get_tax_query_args( $value );
+
 		$args       = [
 			'post_type'      => $post_types,
 			'tax_query'      => [
 				'relation' => 'AND',
 			],
 			'post_status'    => 'publish',
-			'posts_per_page' => $value[ ACF_Post_List_Field_v5::QUERY_LIMIT ] ?? 0,
+			'posts_per_page' => $value[ self::LIMIT_MIN ] ?? 0,
 		];
+
 		foreach ( $tax_query as $taxonomy => $ids ) {
 			$args['tax_query'][] = [
 				'taxonomy' => $taxonomy,
@@ -369,10 +380,12 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 				'operator' => 'IN',
 			];
 		}
+
 		$args   = apply_filters( 'tribe/acf_post_list/query_args', $args );
 		$_posts = get_posts( $args );
 
 		$return = [];
+
 		foreach ( $_posts as $p ) {
 			$return[] = $this->format_post( $p );
 		}
@@ -391,17 +404,21 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 		if ( empty( $value[ self::QUERY_TAXONOMIES ] ) ) {
 			return [];
 		}
+
 		$tax_and_terms = [];
+
 		foreach ( $value[ self::QUERY_TAXONOMIES ] as $taxonomy ) {
-			$terms = $value[ ACF_Post_List_Field_v5::QUERY_TAXONOMIES . '_' . $taxonomy ] ?? false;
+			$terms = $value[ self::QUERY_TAXONOMIES . '_' . $taxonomy ] ?? false;
 
 			if ( ! $terms ) {
 				continue;
 			}
+
 			foreach ( $terms as $term ) {
 				if ( ! is_a( $term, 'WP_Term' ) ) {
 					continue;
 				}
+
 				$tax_and_terms[ $term->taxonomy ][] = $term->term_id;
 			}
 		}
@@ -414,7 +431,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 *
 	 * @return array
 	 */
-	private function format_post( $_post ): array {
+	private function format_post( WP_Post $_post ): array {
 		global $post;
 		$post = $_post;
 		setup_postdata( $post );
@@ -498,6 +515,8 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 
 	/**
 	 * Ajax response to load taxonomy options
+	 *
+	 * @filter wp_ajax_load_taxonomy_choices
 	 */
 	public function get_taxonomies_options_ajax(): void {
 		// we can use the acf nonce to verify
@@ -516,6 +535,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 		foreach ( $taxonomies as $slug => $tax_object ) {
 			$taxonomies_options[ $slug ] = $tax_object->label;
 		}
+
 		/**
 		 * Provided options for post types
 		 *
@@ -534,6 +554,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 * @return array
 	 */
 	private function get_manual_field_config( $field = [] ): array {
+
 		$config = [
 			'min'               => $field[ self::LIMIT_MIN ] ?? $this->defaults[ self::LIMIT_MIN ],
 			'max'               => $field[ self::LIMIT_MAX ] ?? $this->defaults[ self::LIMIT_MAX ],
@@ -563,13 +584,15 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 					'name'       => self::MANUAL_POST,
 					'key'        => self::MANUAL_POST,
 					'type'       => 'post_object',
-					'post_type'  => array_keys( $this->get_public_post_types() ),
+					'post_type'  => [], // populated via acf/fields/post_object/query/name=
 					'allow_null' => true,
 				],
 				[
 					'label'        => __( 'Create or Override Content', 'tribe' ),
-					'instructions' => __( 'Data entered below will overwrite the respective data from the post selected above.',
-						'tribe' ),
+					'instructions' => __(
+						'Data entered below will overwrite the respective data from the post selected above.',
+						'tribe'
+					),
 					'name'         => self::MANUAL_TOGGLE,
 					'key'          => self::MANUAL_TOGGLE,
 					'type'         => 'true_false',
@@ -646,7 +669,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 			'name'    => self::QUERY_TYPE,
 			'key'     => self::QUERY_TYPE,
 			'type'    => 'button_group',
-			'value'   => $field['value'][ self::QUERY_TYPE ] ?? $this->value_defaults[ self::QUERY_TYPE ],
+			'value'   => $field['value'][ self::QUERY_TYPE ] ?? self::QUERY_TYPE_AUTO,
 			'choices' => [
 				self::QUERY_TYPE_AUTO   => __( 'Automatic', 'tribe' ),
 				self::QUERY_TYPE_MANUAL => __( 'Manual', 'tribe' ),
@@ -659,11 +682,24 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	/**
 	 * Field config for the auto query values
 	 *
+	 * @param  array  $post_types_allowed
+	 * @param  array  $taxonomies
 	 * @param  array  $field
 	 *
 	 * @return array
+	 * @throws \Psr\SimpleCache\InvalidArgumentException
 	 */
-	private function get_auto_query_fields( $field = [] ): array {
+	private function get_auto_query_fields( array $post_types_allowed = [], array $taxonomies = [], $field = [] ): array {
+		$cache_key = 'auto_query';
+
+		if ( empty( $field ) ) {
+			$field_config = $this->cache->get( $cache_key );
+
+			if ( $field_config ) {
+				return $field_config;
+			}
+		}
+
 		$config = [
 			[
 				'label'             => __( 'Build your Query', 'tribe' ),
@@ -686,7 +722,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 				'ui'                => true,
 				'name'              => self::QUERY_POST_TYPES,
 				'key'               => self::QUERY_POST_TYPES,
-				'choices'           => $this->post_types_allowed,
+				'choices'           => $post_types_allowed,
 				'value'             => $field['value'][ self::QUERY_POST_TYPES ] ?? [],
 				'wrapper'           => [
 					'class' => 'auto-query-row',
@@ -710,7 +746,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 				'max'               => $field[ self::LIMIT_MAX ] ?? $this->defaults[ self::LIMIT_MAX ],
 				'step'              => 1,
 				'type'              => 'range',
-				'default_value'     => 2,
+				'default_value'     => $field[ self::LIMIT_MIN ] ?? $this->defaults[ self::LIMIT_MIN ],
 				'wrapper'           => [
 					'class' => 'auto-query-row',
 				],
@@ -732,7 +768,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 				'name'              => self::QUERY_TAXONOMIES,
 				'key'               => self::QUERY_TAXONOMIES,
 				'return_format'     => 'value',
-				'choices'           => $this->taxonomies_allowed,
+				'choices'           => $taxonomies,
 				'value'             => $field['value'][ self::QUERY_TAXONOMIES ] ?? [],
 				'wrapper'           => [
 					'class' => 'auto-query-row',
@@ -748,7 +784,8 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 				],
 			],
 		];
-		foreach ( $this->taxonomies_allowed as $name => $label ) {
+
+		foreach ( $taxonomies as $name => $label ) {
 			$config[] = [
 				'label'             => sprintf(
 					__( 'Filter by %s Terms', 'tribe' ),
@@ -780,6 +817,10 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 			];
 		}
 
+		if ( ! empty( $field ) ) {
+			$this->cache->set( $cache_key, $config );
+		}
+
 		return apply_filters( 'tribe/acf_post_list/auto_config', $config );
 	}
 
@@ -787,7 +828,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 * @param $key
 	 * @param $fields
 	 */
-	protected function add_config_to_field_group( $key, $fields ) {
+	protected function add_config_to_field_group( $key, $fields ): void {
 		acf_add_local_field_group( [
 			'key'    => $key,
 			'fields' => [ $fields ],
@@ -798,7 +839,7 @@ class ACF_Post_List_Field_v5 extends \acf_field {
 	 * In order for fields like relationships, post object, etc to work properly
 	 * they need to be registered as local field groups.
 	 */
-	protected function add_field_groups() {
+	public function add_field_groups(): void {
 		$this->add_config_to_field_group( 'query_type_config', $this->get_query_types_config() );
 		$this->add_config_to_field_group( 'auto_query_config', $this->get_auto_query_fields() );
 		$this->add_config_to_field_group( 'manual_field_config', $this->get_manual_field_config() );
