@@ -177,6 +177,11 @@ class Post_List_Field extends acf_field {
 	 * @param  array  $field  The $field being rendered
 	 */
 	public function render_field( array $field = [] ): void {
+		// Replace empty field data with data passed via ajax post.
+		if ( empty( $field ) ) {
+			$field = json_decode( filter_input( INPUT_POST, 'field_data', FILTER_SANITIZE_STRING ) ?: [] );
+		}
+
 		$field = acf_parse_args( $field, $this->defaults );
 
 		acf_render_field_wrap( $this->get_query_types_config( $field ) );
@@ -475,6 +480,9 @@ class Post_List_Field extends acf_field {
 	 * @return array
 	 */
 	private function get_manual_field_config( $field = [] ): array {
+		if ( empty( $field ) ) {
+			$field = json_decode( filter_input( INPUT_POST, 'field_data', FILTER_SANITIZE_STRING ) ?: '' );
+		}
 
 		$config = [
 			'min'               => $field['value'][ self::SETTINGS_FIELD_LIMIT_MIN ] ?? $this->defaults[ self::SETTINGS_FIELD_LIMIT_MIN ],
@@ -484,7 +492,7 @@ class Post_List_Field extends acf_field {
 			'key'               => self::FIELD_MANUAL_QUERY,
 			'label'             => __( 'Manual Items', 'tribe' ),
 			'type'              => 'repeater',
-			'value'             => $field['value'][ self::FIELD_MANUAL_QUERY ] ?? [],
+			'value'             => $field['value'][ self::FIELD_MANUAL_QUERY ] ?? $field[ self::FIELD_MANUAL_QUERY ] ?? [],
 			'conditional_logic' => [
 				[
 					[

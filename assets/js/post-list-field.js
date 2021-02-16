@@ -3,9 +3,14 @@
     // Append the group's field key to the ajax request
     acf.add_filter('select2_ajax_data', function( data, args, $input, field, instance  ){
         const fields = document.querySelectorAll("[data-type='tribe_post_list']");
+        const input = document.querySelector('[data-name=tribe-post-list]').value;
 
-        if ( fields.length ) {
+        if (fields.length) {
             data.group = fields.item(0).getAttribute( 'data-key' );
+        }
+
+        if (input) {
+            data.field_data = input;
         }
 
         return data;
@@ -52,6 +57,20 @@
             let fieldData = JSON.parse($postList.val());
 
             fieldData.query_limit = val;
+            $postList.val(JSON.stringify(fieldData));
+        });
+    });
+
+    // Register event listener for query type
+    acf.addAction('new_field/key=query_type', function (field) {
+        field.$el.bind('change', function (e) {
+            console.log(e.target.value);
+            const val = e.target.value;
+            const $postList = $('[data-name=tribe-post-list]');
+
+            let fieldData = JSON.parse($postList.val());
+
+            fieldData.query_type = val;
             $postList.val(JSON.stringify(fieldData));
         });
     });
