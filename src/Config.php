@@ -23,8 +23,8 @@ class Config {
 	public function get_parent_field( string $acf_field_name ): ?array {
 		$store  = $this->populate_store();
 		$fields = $store->get_data();
-		$types  = wp_list_pluck( $fields, 'type', 'key' );
-		$key    = array_search( $acf_field_name, $types );
+		$keys   = wp_list_pluck( $fields, 'key', 'key' );
+		$key    = array_search( $acf_field_name, $keys );
 
 		if ( ! $key ) {
 			return null;
