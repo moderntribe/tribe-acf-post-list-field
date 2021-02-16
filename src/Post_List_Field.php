@@ -442,6 +442,29 @@ class Post_List_Field extends acf_field {
 	}
 
 	/**
+	 * Field config for query type config
+	 *
+	 * @param  array  $field
+	 *
+	 * @return array
+	 */
+	private function get_query_types_config( $field = [] ): array {
+		$config = [
+			'label'   => __( 'Type of Query', 'tribe' ),
+			'name'    => self::FIELD_QUERY_TYPE,
+			'key'     => self::FIELD_QUERY_TYPE,
+			'type'    => 'button_group',
+			'value'   => $field['value'][ self::FIELD_QUERY_TYPE ] ?? self::OPTION_QUERY_TYPE_AUTO,
+			'choices' => [
+				self::OPTION_QUERY_TYPE_AUTO   => __( 'Automatic', 'tribe' ),
+				self::OPTION_QUERY_TYPE_MANUAL => __( 'Manual', 'tribe' ),
+			],
+		];
+
+		return apply_filters( 'tribe/acf_post_list/query_types_config', $config );
+	}
+
+	/**
 	 * Config values for manual, repeater fields
 	 *
 	 * @param  array  $field
@@ -549,29 +572,6 @@ class Post_List_Field extends acf_field {
 		];
 
 		return apply_filters( 'tribe/acf_post_list/manual_fields_config', $config );
-	}
-
-	/**
-	 * Field config for query type config
-	 *
-	 * @param  array  $field
-	 *
-	 * @return array
-	 */
-	private function get_query_types_config( $field = [] ): array {
-		$config = [
-			'label'   => __( 'Type of Query', 'tribe' ),
-			'name'    => self::FIELD_QUERY_TYPE,
-			'key'     => self::FIELD_QUERY_TYPE,
-			'type'    => 'button_group',
-			'value'   => $field['value'][ self::FIELD_QUERY_TYPE ] ?? self::OPTION_QUERY_TYPE_AUTO,
-			'choices' => [
-				self::OPTION_QUERY_TYPE_AUTO   => __( 'Automatic', 'tribe' ),
-				self::OPTION_QUERY_TYPE_MANUAL => __( 'Manual', 'tribe' ),
-			],
-		];
-
-		return apply_filters( 'tribe/acf_post_list/query_types_config', $config );
 	}
 
 	/**
@@ -685,7 +685,7 @@ class Post_List_Field extends acf_field {
 	 * In order for fields like relationships, post object, etc to work properly
 	 * they need to be registered as local field groups.
 	 */
-	public function add_field_groups(): void {
+	private function add_field_groups(): void {
 		$this->add_config_to_field_group( 'query_type_config', $this->get_query_types_config() );
 		$this->add_config_to_field_group( 'auto_query_config', $this->get_auto_query_fields() );
 		$this->add_config_to_field_group( 'manual_field_config', $this->get_manual_field_config() );
