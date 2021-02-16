@@ -94,6 +94,7 @@ class Post_List_Field extends acf_field {
 			self::FIELD_QUERY_TYPE                         => self::OPTION_QUERY_TYPE_AUTO,
 			self::FIELD_QUERY_TERMS                        => [],
 			self::FIELD_QUERY_POST_TYPES                   => [],
+			self::FIELD_MANUAL_QUERY                       => [],
 		];
 		$this->add_field_groups();
 	}
@@ -120,21 +121,23 @@ class Post_List_Field extends acf_field {
 		] );
 
 		acf_render_field_setting( $field, [
-			'label'    => __( 'Post Types', 'tribe' ),
-			'type'     => 'select',
-			'multiple' => true,
-			'ui'       => true,
-			'name'     => self::SETTINGS_FIELD_POST_TYPES_ALLOWED,
-			'choices'  => acf_get_pretty_post_types(),
+			'label'        => __( 'Post Types', 'tribe' ),
+			'instructions' => __( 'Limit the post types an editor can pick for the automatic query', 'tribe' ),
+			'type'         => 'select',
+			'multiple'     => true,
+			'ui'           => true,
+			'name'         => self::SETTINGS_FIELD_POST_TYPES_ALLOWED,
+			'choices'      => acf_get_pretty_post_types(),
 		] );
 
 		acf_render_field_setting( $field, [
-			'label'    => __( 'Post Types for Manual Query', 'tribe' ),
-			'type'     => 'select',
-			'multiple' => true,
-			'ui'       => true,
-			'name'     => self::SETTINGS_FIELD_POST_TYPES_ALLOWED_MANUAL,
-			'choices'  => acf_get_pretty_post_types(),
+			'label'        => __( 'Post Types for Manual Query', 'tribe' ),
+			'instructions' => __( 'Limit the post types an editor can pick for the manual post picker', 'tribe' ),
+			'type'         => 'select',
+			'multiple'     => true,
+			'ui'           => true,
+			'name'         => self::SETTINGS_FIELD_POST_TYPES_ALLOWED_MANUAL,
+			'choices'      => acf_get_pretty_post_types(),
 		] );
 
 		acf_render_field_setting( $field, [
@@ -157,7 +160,7 @@ class Post_List_Field extends acf_field {
 
 		acf_render_field_setting( $field, [
 			'label'        => __( 'Taxonomies' ),
-			'instructions' => __( 'Select the taxonomies to be displayed' ),
+			'instructions' => __( 'Limit the terms an editor can filter by with these taxonomies', 'tribe' ),
 			'type'         => 'select',
 			'name'         => self::SETTINGS_FIELD_TAXONOMIES_ALLOWED,
 			'multiple'     => 1,
