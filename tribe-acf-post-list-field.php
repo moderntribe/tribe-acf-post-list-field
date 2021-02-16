@@ -60,10 +60,11 @@ function tribe_acf_post_list(): void {
 	// Filter the manual post picker for the post types passed to the field type.
 	add_filter(
 		'acf/fields/post_object/query/name=' . Post_List_Field::FIELD_MANUAL_POST,
-		static function ( $args, $field, $post_id ) use ( $config ) {
+		static function ( $args, $field, $post_id ) use ( $config, $cache ) {
 			$group = filter_input( INPUT_POST, 'group', FILTER_SANITIZE_STRING );
 
-			$parent_field = $config->get_parent_field( (string) $group );
+			// Check ACF's store for this field, otherwise grab from our cache.
+			$parent_field = $config->get_parent_field( (string) $group ) ?? $cache->get( (string) $group );
 
 			if ( $parent_field ) {
 				$args['post_type'] = acf_get_array( $parent_field[ Post_List_Field::SETTINGS_FIELD_POST_TYPES_ALLOWED_MANUAL ] );
