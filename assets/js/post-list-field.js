@@ -1,4 +1,8 @@
 (function ($) {
+
+    // Global as set via wp_localize_script()
+    var postListFieldConfig = window.TRIBE_POST_LIST_CONFIG || [];
+
     // Append the group's field key to the ajax request
     acf.add_filter('select2_ajax_data', function (data, args, $input, field, instance) {
         const fields = document.querySelectorAll("[data-type='tribe_post_list']");
@@ -53,10 +57,10 @@
 
     /**
      * createManualQuery
-     * @param {object} initialData 
-     * @param {object} field 
-     * @param {string} rowID 
-     * @param {string | object} value 
+     * @param {object} initialData
+     * @param {object} field
+     * @param {string} rowID
+     * @param {string | object} value
      */
     const createManualQuery = function (initialData, field, rowID, value) {
         const newEntry = {
@@ -78,9 +82,9 @@
     /**
      * Persists values in hidden input
      * @param {object} field
-     * @param {bool} isManualQuery
+     * @param {boolean} isManualQuery
      */
-    const persistValues = function (field, isManualQuery) {
+    const persistValues = function (field, isManualQuery = false) {
         const $postList = $('[data-name=tribe-post-list]');
         // Only way to get the ID, not present in field object
         let rowID = field.$el.closest('.acf-row').attr('data-id');
@@ -104,32 +108,18 @@
         };
     };
 
-    // Register event listener for manual query fields
-    // Runs as soon as the fields are rendered
+    /**
+     * Register event listener for our fields
+     * Runs as soon as the fields are rendered
+     * @param {object} field
+     */
     acf.addAction('new_field', function (field) {
-        const observedFields = [
-            'manual_post',
-            'manual_title',
-            'manual_excerpt',
-            'manual_cta',
-            'manual_toggle',
-            'manual_thumbnail',
-        ];
+        const keys = Object.keys(postListFieldConfig.listenerFields);
 
-        if (!observedFields.includes(field.data.key)) {
+        if (!keys.includes(field.data.key)) {
             return;
         }
 
-        field.$el.bind('change', persistValues(field, true));
-    });
-
-    // Register event listener for the limit slider
-    acf.addAction('new_field/key=query_limit', function (field) {
-        field.$el.bind('change', persistValues(field));
-    });
-
-    // Register event listener for query type
-    acf.addAction('new_field/key=query_type', function (field) {
-        field.$el.bind('change', persistValues(field));
+        field.$el.bind('change input', persistValues(field, postListFieldConfig.listenerFields[field.data.key]));
     });
 })(jQuery);
