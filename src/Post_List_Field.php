@@ -3,6 +3,7 @@
 namespace Tribe\ACF_Post_List;
 
 use WP_Post;
+use stdClass;
 use acf_field;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -95,7 +96,7 @@ class Post_List_Field extends acf_field {
 			self::FIELD_QUERY_TERMS                        => [],
 			self::FIELD_QUERY_POST_TYPES                   => [],
 			// Properly converts into JSON object
-			self::FIELD_MANUAL_QUERY                       => new \stdClass(),
+			self::FIELD_MANUAL_QUERY                       => new stdClass(),
 		];
 		$this->add_field_groups();
 	}
@@ -445,6 +446,23 @@ class Post_List_Field extends acf_field {
 
 		wp_register_script( 'tribe-acf-post-list', "{$url}assets/js/post-list-field.js", [ 'acf-input' ], $version );
 		wp_enqueue_script( 'tribe-acf-post-list' );
+
+		/**
+		 * Add all fields that need to have an event listener registered on render.
+		 * Set the value to true if it's a field part of the manual query repeater.
+		 */
+		wp_localize_script( 'tribe-acf-post-list', 'TRIBE_POST_LIST_CONFIG', [
+			'listenerFields' => [
+				self::FIELD_MANUAL_POST      => true,
+				self::FIELD_MANUAL_TITLE     => true,
+				self::FIELD_MANUAL_EXCERPT   => true,
+				self::FIELD_MANUAL_CTA       => true,
+				self::FIELD_MANUAL_TOGGLE    => true,
+				self::FIELD_MANUAL_THUMBNAIL => true,
+				self::FIELD_QUERY_LIMIT      => false,
+				self::FIELD_QUERY_TYPE       => false,
+			],
+		] );
 
 		wp_register_style( 'tribe-acf-post-list', "{$url}assets/css/post-list-field.css", [ 'acf-input' ], $version );
 		wp_enqueue_style( 'tribe-acf-post-list' );
