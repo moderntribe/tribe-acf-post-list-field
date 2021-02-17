@@ -51,19 +51,26 @@
         };
     };
 
-    const createManualQuery = function (fieldData, field, rowID, value) {
+    /**
+     * createManualQuery
+     * @param {object} initialData 
+     * @param {object} field 
+     * @param {string} rowID 
+     * @param {string | object} value 
+     */
+    const createManualQuery = function (initialData, field, rowID, value) {
         const newEntry = {
             // Defaults:
             manual_toggle: 0,
             manual_cta: {},
             // Initial data
-            ...fieldData['manual_query'][rowID],
+            ...initialData[rowID],
             // New value
             [field.data.key]: value,
         };
 
         return {
-            ...fieldData.manual_query,
+            ...initialData,
             [rowID]: newEntry,
         };
     };
@@ -88,7 +95,7 @@
             let fieldData = JSON.parse($postList.val());
 
             if (isManualQuery) {
-                fieldData.manual_query = createManualQuery(fieldData, field, rowID, val);
+                fieldData.manual_query = createManualQuery(fieldData.manual_query, field, rowID, val);
             } else {
                 fieldData[field.data.key] = val;
             }
