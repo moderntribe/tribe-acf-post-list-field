@@ -1,109 +1,125 @@
 (function ($) {
-    //TODO: This javascript should be cleaned up by someone who writes javascript :)
-    acf.add_action('ready append', function ($el) {
-        acf.get_fields({type: 'tribe_post_list'}, $el).each(function () {
-            initialize_field($(this));
-        });
+
+    // Global as set via wp_localize_script()
+    var postListFieldConfig = window.TRIBE_POST_LIST_CONFIG || [];
+
+    // Append the group's field key to the ajax request
+    acf.add_filter('select2_ajax_data', function (data, args, $input, field, instance) {
+        const fields = document.querySelectorAll("[data-type='tribe_post_list']");
+        const input = document.querySelector('[data-name=tribe-post-list]').value;
+
+        if (fields.length) {
+            data.group = fields.item(0).getAttribute('data-key');
+        }
+
+        if (input) {
+            data.field_data = input;
+        }
+
+        return data;
     });
 
-    let initialize_field = function ($field) {
-        const data_obj_field = $field.find('.js-post-list-data');
-        const data_obj = JSON.parse(data_obj_field.val()) || {};
+    // Register event listeners for our select2 inputs.
+    acf.addAction('select2_init', function ($select, args, settings, field) {
+        const allowedFields = ['query_post_types', 'query_terms'];
+        const $postList = $('[data-name=tribe-post-list]');
 
-        $field.on('change', '.acf-input select, .acf-input input, .acf-input textarea', function (e) {
-            if ($(this).parents('.acf-field-repeater').length === 1) {
-                //If this is a repeater... TODO: Abstract this to a function/method?
-                let repeater_field = $(this).parents('.acf-field-repeater').first();
-                let repeater_name = repeater_field.data('key');
-                let repeater_rows = repeater_field.find('tbody:first > tr').not('.acf-clone');
-                repeater_data = [];
-                repeater_rows.each(function () {
-                    field_data = {};
-                    $(this).find('.acf-input select, .acf-input input, .acf-input textarea').each(function (key, value) {
-                        let field_wrapper = $(this).closest('.acf-field');
-                        if (field_wrapper.data('type') === 'true_false') {
-                            field_data[field_wrapper.data('key')] = get_value_of_true_false($(this));
-                        } else if (field_wrapper.data('type') === 'link') {
-                            field_data[field_wrapper.data('key')] = get_value_of_link($(this));
-                        } else {
-                            field_data[field_wrapper.data('key')] = $(this).val();
-                        }
-                    });
-                    repeater_data.push(field_data);
-                });
-                data_obj[repeater_name] = repeater_data;
-            } else {
-                let field_name = $(this).closest('.acf-field').data('key');
-                data_obj[field_name] = $(this).val();
-            }
-            data_obj_field.val(JSON.stringify(data_obj));
-        });
-
-        $field.on('change', '[data-key="query_post_types"] .acf-input select', function (e) {
-            update_taxonomy_options(e, $field);
-        });
-        $('[data-key="query_post_types"] .acf-input select').trigger('change'); //trigger an update if post type value is changed.
-    };
-
-    let get_value_of_link = function ($field) {
-        let link_obj = {};
-        $link = $field.closest('.acf-field').find('.link-node');
-        if ($link === undefined) {
-            return link_obj
-        }
-
-        link_obj.title = $link.text();
-        link_obj.url = $link.prop('href');
-        link_obj.target = $link.prop('target');
-        return link_obj;
-
-    };
-
-    let get_value_of_true_false = function ($field) {
-        return $field.is(':checked') ? 1 : 0;
-    };
-
-    let update_taxonomy_options = function (element, $field) {
-        if (this.request) {
-            // if a recent request has been made abort it
-            this.request.abort();
-        }
-        let target = $(element.target);
-        let allowed_taxonomies = $field.find('.js-post-list-data').data('allowed_taxonomies');
-        let post_types = target.val(); //current post types selected
-        let taxonomy_select = $field.find('[data-key="query_taxonomy_terms"] select');
-
-        if (!post_types) {
-            taxonomy_select.empty(); //No post types, no taxonomies
-            $('[data-key="query_taxonomy_terms"] .acf-input select').trigger('change'); //trigger the conditional logic changes
+        if (!allowedFields.includes(field.data.name)) {
             return;
         }
 
-        taxonomy_select.empty();
+        $select.bind('change', function (e) {
+            const selected = $('#' + e.target.getAttribute('id')).select2('data');
 
-        // set and prepare data for ajax
-        let data = {
-            action: 'load_taxonomy_choices',
-            post_types: post_types,
-            available_taxonomies: allowed_taxonomies,
+            let fieldData = JSON.parse($postList.val());
+
+            // Add the terms to the hidden field.
+            if ('query_terms' === field.data.name) {
+                fieldData.query_terms = selected.map((selection) => selection.id);
+            }
+
+            // Add post types to the hidden field.
+            if ('query_post_types' === field.data.name) {
+                fieldData.query_post_types = selected.map((selection) => selection.id);
+            }
+
+            $postList.val(JSON.stringify(fieldData));
+        });
+    });
+
+    const getLinkValue = function (field) {
+        return {
+            title: field.$el.find('.input-title').val(),
+            url: field.$el.find('.input-url').val(),
+            target: field.$el.find('.input-target').val(),
+        };
+    };
+
+    /**
+     * createManualQuery
+     * @param {object} initialData
+     * @param {object} field
+     * @param {string} rowID
+     * @param {string | object} value
+     */
+    const createManualQuery = function (initialData, field, rowID, value) {
+        const newEntry = {
+            // Defaults:
+            manual_toggle: 0,
+            manual_cta: {},
+            // Initial data
+            ...initialData[rowID],
+            // New value
+            [field.data.key]: value,
         };
 
-        data = acf.prepareForAjax(data);
-        this.request = $.ajax({
-            url: acf.get('ajaxurl'), // acf stored value
-            data: data,
-            type: 'post',
-            dataType: 'json',
-            success: function (json) {
-                if (!json) {
-                    return;
-                }
-                for (const [key, value] of Object.entries(json)) {
-                    let tax_item = '<option value="' + key + '">' + value + '</option>';
-                    taxonomy_select.append(tax_item);
-                }
-                $('[data-key="query_taxonomy_terms"] .acf-input select').trigger('change'); //trigger conditional logic update
+        return {
+            ...initialData,
+            [rowID]: newEntry,
+        };
+    };
+
+    /**
+     * Persists values in hidden input
+     * @param {object} field
+     * @param {boolean} isManualQuery
+     */
+    const persistValues = function (field, isManualQuery = false) {
+        const $postList = $('[data-name=tribe-post-list]');
+        // Only way to get the ID, not present in field object
+        let rowID = field.$el.closest('.acf-row').attr('data-id');
+
+        // Keep just the ID
+        if (rowID) {
+            rowID = rowID.replace('row-', '');
+        }
+
+        return function (e) {
+            const val = field.data.type === 'link' ? getLinkValue(field) : e.target.value;
+            let fieldData = JSON.parse($postList.val());
+
+            if (isManualQuery) {
+                fieldData.manual_query = createManualQuery(fieldData.manual_query, field, rowID, val);
+            } else {
+                fieldData[field.data.key] = val;
             }
-        });
-    }
+
+            $postList.val(JSON.stringify(fieldData));
+        };
+    };
+
+    /**
+     * Register event listener for our fields
+     * Runs as soon as the fields are rendered
+     * @param {object} field
+     */
+    acf.addAction('new_field', function (field) {
+        const keys = Object.keys(postListFieldConfig.listenerFields);
+
+        if (!keys.includes(field.data.key)) {
+            return;
+        }
+
+        field.$el.bind('change input', persistValues(field, postListFieldConfig.listenerFields[field.data.key]));
+    });
 })(jQuery);
