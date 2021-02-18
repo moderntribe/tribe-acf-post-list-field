@@ -232,8 +232,8 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 	public function render_field_settings( $field ): void {
 		// Default value.
 		acf_render_field_setting( $field, [
-			'label'        => __( 'Taxonomies' ),
-			'instructions' => __( 'Select the taxonomies to be displayed' ),
+			'label'        => __( 'Taxonomies', 'tribe' ),
+			'instructions' => __( 'Select the taxonomies to be displayed', 'tribe' ),
 			'type'         => 'select',
 			'name'         => 'taxonomies',
 			'multiple'     => 1,
@@ -243,7 +243,7 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 
 		// Allow null.
 		acf_render_field_setting( $field, [
-			'label'        => __( 'Allow Null?', 'acf' ),
+			'label'        => __( 'Allow Null?', 'tribe' ),
 			'instructions' => '',
 			'name'         => 'allow_null',
 			'type'         => 'true_false',
@@ -257,8 +257,8 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 
 		// Save terms.
 		acf_render_field_setting( $field, [
-			'label'        => __( 'Save Terms', 'acf' ),
-			'instructions' => __( 'Connect selected terms to the post', 'acf' ),
+			'label'        => __( 'Save Terms', 'tribe' ),
+			'instructions' => __( 'Connect selected terms to the post', 'tribe' ),
 			'name'         => 'save_terms',
 			'type'         => 'true_false',
 			'ui'           => 1,
@@ -266,8 +266,8 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 
 		// Load terms.
 		acf_render_field_setting( $field, [
-			'label'        => __( 'Load Terms', 'acf' ),
-			'instructions' => __( 'Load value from posts terms', 'acf' ),
+			'label'        => __( 'Load Terms', 'tribe' ),
+			'instructions' => __( 'Load value from posts terms', 'tribe' ),
 			'name'         => 'load_terms',
 			'type'         => 'true_false',
 			'ui'           => 1,
@@ -275,13 +275,13 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 
 		// Return format.
 		acf_render_field_setting( $field, [
-			'label'        => __( 'Return Value', 'acf' ),
+			'label'        => __( 'Return Value', 'tribe' ),
 			'instructions' => '',
 			'type'         => 'radio',
 			'name'         => 'return_format',
 			'choices'      => [
-				'object' => __( 'Term Object', 'acf' ),
-				'id'     => __( 'Term ID', 'acf' ),
+				'object' => __( 'Term Object', 'tribe' ),
+				'id'     => __( 'Term ID', 'tribe' ),
 			],
 			'layout'       => 'horizontal',
 		] );
