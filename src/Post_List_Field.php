@@ -214,7 +214,7 @@ class Post_List_Field extends acf_field {
 	 */
 	public function load_value( $value, $post_id, $field ) {
 		if ( ! $value ) {
-			return $this->defaults;
+			$value = $this->defaults;
 		}
 
 		return $value;
@@ -253,7 +253,7 @@ class Post_List_Field extends acf_field {
 	 * @return mixed
 	 */
 	public function update_value( $data, $post_id, $field ) {
-		return json_decode( $data, true );
+		return json_decode( wp_unslash( $data ), true );
 	}
 
 	/**
