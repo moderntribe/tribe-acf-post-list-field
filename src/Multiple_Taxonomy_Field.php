@@ -126,19 +126,16 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 
 		// Build results loop.
 		foreach ( $terms as $term ) {
-
-			$taxonomy = get_taxonomy( $term->taxonomy );
-			$parents  = wp_list_pluck( $results, 'id' );
-			$key      = array_search( $taxonomy->name, $parents, true );
-			$f = $field;
-
-			$f['taxonomy'] = $taxonomy->name;
+			$taxonomy          = get_taxonomy( $term->taxonomy );
+			$parents           = wp_list_pluck( $results, 'id' );
+			$key               = array_search( $taxonomy->name, $parents, true );
+			$field['taxonomy'] = $taxonomy->name;
 
 			// Add terms to existing taxonomy optgroup.
 			if ( is_int( $key ) ) {
 				$results[ $key ]['children'][] = [
 					'id'   => $term->term_id,
-					'text' => $this->get_term_title( $term, $f, $options['post_id'] ),
+					'text' => $this->get_term_title( $term, $field, $options['post_id'] ),
 				];
 			} else {
 				// Create a new optgroup
@@ -148,13 +145,11 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 					'children' => [
 						[
 							'id'   => $term->term_id,
-							'text' => $this->get_term_title( $term, $f, $options['post_id'] ),
+							'text' => $this->get_term_title( $term, $field, $options['post_id'] ),
 						],
 					],
 				];
 			}
-
-			unset( $f );
 		}
 
 		return [
@@ -166,7 +161,7 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 	/**
 	 * Render the HTML interface for this field.
 	 *
-	 * @param array $field
+	 * @param  array  $field
 	 */
 	public function render_field( $field ) {
 
@@ -184,9 +179,9 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 		];
 
 		?>
-		<div <?php acf_esc_attrs( $div ); ?>>
+        <div <?php acf_esc_attrs( $div ); ?>>
 			<?php $this->render_field_select( $field ); ?>
-		</div>
+        </div>
 		<?php
 	}
 
@@ -194,7 +189,7 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 	/**
 	 * Render the taxonomy select field.
 	 *
-	 * @param array $field
+	 * @param  array  $field
 	 */
 	public function render_field_select( $field ): void {
 
@@ -227,7 +222,7 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 	/**
 	 * Render the field settings.
 	 *
-	 * @param array $field
+	 * @param  array  $field
 	 */
 	public function render_field_settings( $field ): void {
 		// Default value.
