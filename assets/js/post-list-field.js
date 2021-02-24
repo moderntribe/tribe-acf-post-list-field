@@ -22,7 +22,6 @@
     // Register event listeners for our select2 inputs.
     acf.addAction('select2_init', function ($select, args, settings, field) {
         const allowedFields = ['query_post_types', 'query_terms'];
-        const $postList = $('[data-name=tribe-post-list]');
 
         if (!allowedFields.includes(field.data.name)) {
             return;
@@ -31,7 +30,7 @@
         $select.bind('change', function (e) {
             const selected = $('#' + e.target.getAttribute('id')).select2('data');
 
-            let fieldData = JSON.parse($postList.val());
+            let fieldData = getFieldData();
 
             // Add the terms to the hidden field.
             if ('query_terms' === field.data.name) {
@@ -43,7 +42,7 @@
                 fieldData.query_post_types = selected.map((selection) => selection.id);
             }
 
-            $postList.val(JSON.stringify(fieldData));
+            saveFieldData(fieldData);
         });
     });
 
