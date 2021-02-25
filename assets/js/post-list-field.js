@@ -2,8 +2,6 @@
 
     // Global as set via wp_localize_script()
     var postListFieldConfig = window.TRIBE_POST_LIST_CONFIG || [];
-    // The hidden input named after our field so ACF will submit data
-    const fieldObject = $('[data-name=tribe-post-list]');
 
     // Append the group's field key to the ajax request
     acf.add_filter('select2_ajax_data', function (data, args, $input, field, instance) {
@@ -49,12 +47,21 @@
     });
 
     /**
+     * Get the jQuery field object.
+     *
+     * @returns {*|Window.jQuery|HTMLElement}
+     */
+    const getFieldObject = function () {
+        return $('[data-name=tribe-post-list]');
+    }
+
+    /**
      * Retrieve the JSON parsed hidden input data.
      *
      * @returns {any}
      */
     const getFieldData = function () {
-        return JSON.parse(fieldObject.val());
+        return JSON.parse(getFieldObject().val());
     };
 
     /**
@@ -64,7 +71,7 @@
      * @returns {*|string|jQuery}
      */
     const saveFieldData = function (fieldData) {
-        return fieldObject.val(JSON.stringify(fieldData));
+        return getFieldObject().val(JSON.stringify(fieldData));
     }
 
     /**
