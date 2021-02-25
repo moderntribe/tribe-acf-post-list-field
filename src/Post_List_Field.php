@@ -320,7 +320,7 @@ class Post_List_Field extends acf_field {
 		$post_array['link']     = ( $repeater[ self::FIELD_MANUAL_CTA ] ?? [] ) ?: $post_array['link'] ?? [];
 
 		// Allow the user to have a post with no hyperlink by creating empty defaults
-		$disable_hyperlink = (bool) $repeater[ self::FIELD_MANUAL_LINK_TOGGLE ] ?? false;
+		$disable_hyperlink = (bool) ( $repeater[ self::FIELD_MANUAL_LINK_TOGGLE ] ?? false );
 
 		if ( $disable_hyperlink || empty( $post_array['link'] ) ) {
 			$post_array['link'] = [
