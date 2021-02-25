@@ -41,13 +41,14 @@ class Post_List_Field extends acf_field {
 	public const OPTION_QUERY_TYPE_MANUAL = 'query_type_manual';
 
 	// Manual query fields
-	public const FIELD_MANUAL_QUERY     = 'manual_query';
-	public const FIELD_MANUAL_POST      = 'manual_post';
-	public const FIELD_MANUAL_TOGGLE    = 'manual_toggle';
-	public const FIELD_MANUAL_TITLE     = 'manual_title';
-	public const FIELD_MANUAL_EXCERPT   = 'manual_excerpt';
-	public const FIELD_MANUAL_CTA       = 'manual_cta';
-	public const FIELD_MANUAL_THUMBNAIL = 'manual_thumbnail';
+	public const FIELD_MANUAL_QUERY       = 'manual_query';
+	public const FIELD_MANUAL_POST        = 'manual_post';
+	public const FIELD_MANUAL_TOGGLE      = 'manual_toggle';
+	public const FIELD_MANUAL_TITLE       = 'manual_title';
+	public const FIELD_MANUAL_EXCERPT     = 'manual_excerpt';
+	public const FIELD_MANUAL_LINK_TOGGLE = 'manual_link_toggle';
+	public const FIELD_MANUAL_CTA         = 'manual_cta';
+	public const FIELD_MANUAL_THUMBNAIL   = 'manual_thumbnail';
 
 	// Query Fields
 	public const FIELD_QUERY_LIMIT      = 'query_limit';
@@ -264,6 +265,10 @@ class Post_List_Field extends acf_field {
 	private function get_manually_selected_posts( $value ): array {
 		$manual_rows = $value[ self::FIELD_MANUAL_QUERY ] ?? [];
 
+		if ( empty( $manual_rows ) ) {
+			return [];
+		}
+
 		$post_array = [];
 
 		foreach ( $manual_rows as $row ) {
@@ -301,26 +306,28 @@ class Post_List_Field extends acf_field {
 	}
 
 	/**
-	 * @param  array  $values
-	 * @param  array  $post_array
+	 * Replace a post object's content with that manually entered by the user.
+	 *
+	 * @param  array  $repeater    The ACF repeater data.
+	 * @param  array  $post_array  The post array to replace or build.
 	 *
 	 * @return array
 	 */
-	private function maybe_overwrite_values( $values, $post_array = [] ): array {
-		if ( ! empty( $values[ self::FIELD_MANUAL_TITLE ] ) ) {
-			$post_array['title'] = $values[ self::FIELD_MANUAL_TITLE ];
-		}
+	private function maybe_overwrite_values( array $repeater = [], $post_array = [] ): array {
+		$post_array['title']    = ( $repeater[ self::FIELD_MANUAL_TITLE ] ?? '' ) ?: $post_array['title'] ?? '';
+		$post_array['excerpt']  = ( $repeater[ self::FIELD_MANUAL_EXCERPT ] ?? '' ) ?: $post_array['excerpt'] ?? '';
+		$post_array['image_id'] = (int) ( $repeater[ self::FIELD_MANUAL_THUMBNAIL ] ?? '' ) ?: $post_array['image_id'] ?? 0;
+		$post_array['link']     = ( $repeater[ self::FIELD_MANUAL_CTA ] ?? [] ) ?: $post_array['link'] ?? [];
 
-		if ( ! empty( $values[ self::FIELD_MANUAL_EXCERPT ] ) ) {
-			$post_array['excerpt'] = $values[ self::FIELD_MANUAL_EXCERPT ];
-		}
+		// Allow the user to have a post with no hyperlink by creating empty defaults
+		$disable_hyperlink = (bool) ( $repeater[ self::FIELD_MANUAL_LINK_TOGGLE ] ?? false );
 
-		if ( ! empty( $values[ self::FIELD_MANUAL_THUMBNAIL ] ) ) {
-			$post_array['image_id'] = (int) $values[ self::FIELD_MANUAL_THUMBNAIL ];
-		}
-
-		if ( $values[ self::FIELD_MANUAL_CTA ] && is_array( $values[ self::FIELD_MANUAL_CTA ] ) ) {
-			$post_array['link'] = $values[ self::FIELD_MANUAL_CTA ];
+		if ( $disable_hyperlink || empty( $post_array['link'] ) ) {
+			$post_array['link'] = [
+				'url'    => '',
+				'target' => '',
+				'title'  => '',
+			];
 		}
 
 		return $post_array;
@@ -453,14 +460,15 @@ class Post_List_Field extends acf_field {
 		 */
 		wp_localize_script( 'tribe-acf-post-list', 'TRIBE_POST_LIST_CONFIG', [
 			'listenerFields' => [
-				self::FIELD_MANUAL_POST      => true,
-				self::FIELD_MANUAL_TITLE     => true,
-				self::FIELD_MANUAL_EXCERPT   => true,
-				self::FIELD_MANUAL_CTA       => true,
-				self::FIELD_MANUAL_TOGGLE    => true,
-				self::FIELD_MANUAL_THUMBNAIL => true,
-				self::FIELD_QUERY_LIMIT      => false,
-				self::FIELD_QUERY_TYPE       => false,
+				self::FIELD_MANUAL_POST        => true,
+				self::FIELD_MANUAL_TITLE       => true,
+				self::FIELD_MANUAL_EXCERPT     => true,
+				self::FIELD_MANUAL_LINK_TOGGLE => true,
+				self::FIELD_MANUAL_CTA         => true,
+				self::FIELD_MANUAL_TOGGLE      => true,
+				self::FIELD_MANUAL_THUMBNAIL   => true,
+				self::FIELD_QUERY_LIMIT        => false,
+				self::FIELD_QUERY_TYPE         => false,
 			],
 		] );
 
@@ -572,6 +580,24 @@ class Post_List_Field extends acf_field {
 					],
 				],
 				[
+					'label'             => __( 'Disable hyperlink', 'tribe' ),
+					'instructions'      => __(
+						'No link will be output',
+						'tribe'
+					),
+					'name'              => self::FIELD_MANUAL_LINK_TOGGLE,
+					'key'               => self::FIELD_MANUAL_LINK_TOGGLE,
+					'type'              => 'true_false',
+					'default'           => false,
+					'conditional_logic' => [
+						[
+							'field'    => self::FIELD_MANUAL_TOGGLE,
+							'operator' => '==',
+							'value'    => '1',
+						],
+					],
+				],
+				[
 					'name'              => self::FIELD_MANUAL_CTA,
 					'key'               => self::FIELD_MANUAL_CTA,
 					'label'             => __( 'Call to Action', 'tribe' ),
@@ -582,6 +608,11 @@ class Post_List_Field extends acf_field {
 							'operator' => '==',
 							'value'    => '1',
 						],
+						[
+							'field' => self::FIELD_MANUAL_LINK_TOGGLE,
+							'operator' => '!=',
+							'value' => '1'
+						]
 					],
 				],
 				[
