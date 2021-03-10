@@ -159,6 +159,11 @@
      * @param $el The row
      */
     const removeManualQuery = function ($el) {
+        // Skip if this is not an ACF post list field
+        if ( $el.parents('.acf-field-tribe-post-list').length === 0 ) {
+            return;
+        }
+
         let rowID = $el.attr('data-id');
 
         if (!rowID) {
