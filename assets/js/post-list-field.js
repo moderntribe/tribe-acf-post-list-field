@@ -160,7 +160,7 @@
      */
     const removeManualQuery = function ($el) {
         // Skip if this is not ACF post list field
-        if ( $el.parent('.acf-field-tribe-post-list').length === 0 ) {
+        if ( $el.parents('.acf-field-tribe-post-list').length === 0 ) {
             return;
         }
 
