@@ -30,7 +30,7 @@
         $select.bind('change', function (e) {
             const selected = $('#' + e.target.getAttribute('id')).select2('data');
 
-            let fieldData = getFieldData();
+            let fieldData = getFieldData(field.$el);
 
             // Add the terms to the hidden field.
             if ('query_terms' === field.data.name) {
@@ -42,36 +42,42 @@
                 fieldData.query_post_types = selected.map((selection) => selection.id);
             }
 
-            saveFieldData(fieldData);
+            saveFieldData(fieldData, field.$el);
         });
     });
 
     /**
      * Get the jQuery field object.
      *
+     * @param {jQuery} $field
+     *
      * @returns {*|Window.jQuery|HTMLElement}
      */
-    const getFieldObject = function () {
-        return $('[data-name=tribe-post-list]');
+    const getFieldObject = function ($field) {
+        const container = $field.closest('.is-selected, .-open');
+        return $('[data-name=tribe-post-list]', container);
     }
 
     /**
      * Retrieve the JSON parsed hidden input data.
      *
+     * @param {jQuery} $field
+     *
      * @returns {any}
      */
-    const getFieldData = function () {
-        return JSON.parse(getFieldObject().val());
+    const getFieldData = function ($field) {
+        return JSON.parse(getFieldObject($field).val());
     };
 
     /**
      * Save the field data.
      *
      * @param {object} fieldData
+     * @param {jQuery} $field
      * @returns {*|string|jQuery}
      */
-    const saveFieldData = function (fieldData) {
-        return getFieldObject().val(JSON.stringify(fieldData));
+    const saveFieldData = function (fieldData, $field) {
+        return getFieldObject($field).val(JSON.stringify(fieldData));
     }
 
     /**
@@ -141,7 +147,7 @@
                     break;
             }
 
-            let fieldData = getFieldData();
+            let fieldData = getFieldData(field.$el);
 
             if (isManualQuery) {
                 fieldData.manual_query = createManualQuery(fieldData.manual_query, field, rowID, val);
@@ -149,7 +155,7 @@
                 fieldData[field.data.key] = val;
             }
 
-            saveFieldData(fieldData);
+            saveFieldData(fieldData, field.$el);
         };
     };
 
@@ -171,9 +177,9 @@
         }
 
         rowID = rowID.replace('row-', '');
-        let fieldData = getFieldData();
+        let fieldData = getFieldData($el);
         delete fieldData.manual_query[rowID];
-        saveFieldData(fieldData);
+        saveFieldData(fieldData, $el);
     }
 
     /**
