@@ -194,6 +194,9 @@ class Post_List_Field extends acf_field {
 			acf_render_field_wrap( $config );
 		}
 
+		$field['value'][ self::SETTINGS_FIELD_LIMIT_MIN ] = $field[ self::SETTINGS_FIELD_LIMIT_MIN ] ?? $this->defaults[ self::SETTINGS_FIELD_LIMIT_MIN ];
+		$field['value'][ self::SETTINGS_FIELD_LIMIT_MAX ] = $field[ self::SETTINGS_FIELD_LIMIT_MAX ] ?? $this->defaults[ self::SETTINGS_FIELD_LIMIT_MAX ];
+
 		// Output field data as a json string to a hidden field
 		acf_hidden_input( [
 			'name'      => esc_attr( $field['name'] ),
@@ -512,8 +515,8 @@ class Post_List_Field extends acf_field {
 		}
 
 		$config = [
-			'min'               => $field['value'][ self::SETTINGS_FIELD_LIMIT_MIN ] ?? $this->defaults[ self::SETTINGS_FIELD_LIMIT_MIN ],
-			'max'               => $field['value'][ self::SETTINGS_FIELD_LIMIT_MAX ] ?? $this->defaults[ self::SETTINGS_FIELD_LIMIT_MAX ],
+			'min'               => $field[ self::SETTINGS_FIELD_LIMIT_MIN ] ?? $this->defaults[ self::SETTINGS_FIELD_LIMIT_MIN ],
+			'max'               => $field[ self::SETTINGS_FIELD_LIMIT_MAX ] ?? $this->defaults[ self::SETTINGS_FIELD_LIMIT_MAX ],
 			'layout'            => 'row',
 			'name'              => self::FIELD_MANUAL_QUERY,
 			'key'               => self::FIELD_MANUAL_QUERY,
@@ -686,8 +689,8 @@ class Post_List_Field extends acf_field {
 				'name'              => self::FIELD_QUERY_LIMIT,
 				'key'               => self::FIELD_QUERY_LIMIT,
 				'value'             => $field['value'][ self::FIELD_QUERY_LIMIT ] ?? ( $field[ self::SETTINGS_FIELD_LIMIT_MIN ] ?? $this->defaults[ self::SETTINGS_FIELD_LIMIT_MIN ] ),
-				'min'               => $field['value'][ self::SETTINGS_FIELD_LIMIT_MIN ] ?? $this->defaults[ self::SETTINGS_FIELD_LIMIT_MIN ],
-				'max'               => $field['value'][ self::SETTINGS_FIELD_LIMIT_MAX ] ?? $this->defaults[ self::SETTINGS_FIELD_LIMIT_MAX ],
+				'min'               => $field[ self::SETTINGS_FIELD_LIMIT_MIN ] ?? $this->defaults[ self::SETTINGS_FIELD_LIMIT_MIN ],
+				'max'               => $field[ self::SETTINGS_FIELD_LIMIT_MAX ] ?? $this->defaults[ self::SETTINGS_FIELD_LIMIT_MAX ],
 				'step'              => 1,
 				'type'              => 'range',
 				'default_value'     => $field['value'][ self::SETTINGS_FIELD_LIMIT_MIN ] ?? $this->defaults[ self::SETTINGS_FIELD_LIMIT_MIN ],
