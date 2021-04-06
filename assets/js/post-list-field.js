@@ -7,14 +7,14 @@
 		// Append the group's field key to the ajax request
 		acf.add_filter( 'select2_ajax_data', function ( data, args, $input, field, instance ) {
 			const fields = document.querySelectorAll( '[data-type=\'tribe_post_list\']' );
-			const input = document.querySelector( '[data-name=tribe-post-list]' ).value;
+			const input = document.querySelector( '[data-name=tribe-post-list]' );
 
 			if ( fields.length ) {
 				data.group = fields.item( 0 ).getAttribute( 'data-key' );
 			}
 
-			if ( input ) {
-				data.field_data = input;
+			if ( input && input.value ) {
+				data.field_data = input.value;
 			}
 
 			return data;
