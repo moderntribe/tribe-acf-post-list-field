@@ -4,6 +4,10 @@
 		// Global as set via wp_localize_script()
 		var postListFieldConfig = window.TRIBE_POST_LIST_CONFIG || [];
 
+		const state = {
+			oldRowIndex: 0,
+		};
+
 		// Append the group's field key to the ajax request
 		acf.add_filter( 'select2_ajax_data', function ( data, args, $input, field, instance ) {
 			const fields = document.querySelectorAll( '[data-type=\'tribe_post_list\']' );
@@ -100,24 +104,24 @@
 		 *
 		 * @param {object} initialData
 		 * @param {object} field
-		 * @param {string} rowID
+		 * @param {string} index
 		 * @param {string | object} value
 		 */
-		const createManualQuery = function ( initialData, field, rowID, value ) {
+		const createManualQuery = function ( initialData, field, index, value ) {
 			const newEntry = {
 				// Defaults:
 				manual_toggle: 0,
 				manual_link_toggle: 0,
 				manual_cta: {},
 				// Initial data
-				...initialData[rowID],
+				...initialData[index],
 				// New value
 				[field.data.key]: value,
 			};
 
 			return {
 				...initialData,
-				[rowID]: newEntry,
+				[index]: newEntry,
 			};
 		};
 
@@ -128,13 +132,8 @@
 		 * @param {boolean} isManualQuery
 		 */
 		const persistValues = function ( field, isManualQuery = false ) {
-			// Only way to get the ID, not present in field object
-			let rowID = field.$el.closest( '.acf-row' ).attr( 'data-id' );
-
-			// Keep just the ID
-			if ( rowID ) {
-				rowID = rowID.replace( 'row-', '' );
-			}
+			// Only way to get the position, not present in field object
+			const index = field.$el.closest( '.acf-row' ).index();
 
 			return function ( e ) {
 				let val = e.target.value;
@@ -151,7 +150,7 @@
 				let fieldData = getFieldData( field.$el );
 
 				if ( isManualQuery ) {
-					fieldData.manual_query = createManualQuery( fieldData.manual_query, field, rowID, val );
+					fieldData.manual_query = createManualQuery( fieldData.manual_query, field, index, val );
 				} else {
 					fieldData[field.data.key] = val;
 				}
@@ -171,15 +170,14 @@
 				return;
 			}
 
-			let rowID = $el.attr( 'data-id' );
+			const index = $el.index();
 
-			if ( !rowID ) {
+			if ( index < 0 ) {
 				return;
 			}
 
-			rowID = rowID.replace( 'row-', '' );
 			let fieldData = getFieldData( $el );
-			delete fieldData.manual_query[rowID];
+			fieldData.manual_query.splice( index, 1 );
 			saveFieldData( fieldData, $el );
 		};
 
@@ -203,5 +201,23 @@
 		 * Remove a manual post when the ACF row is deleted
 		 */
 		acf.addAction( 'remove', removeManualQuery );
+
+		/**
+		 * Store the index of the row as it's being dragged
+		 */
+		acf.addAction( 'sortstart', function( $el ) {
+			state.oldRowIndex = $el.index();
+		} );
+
+		/**
+		 * Move the position of the dragged row
+		 */
+		acf.addAction( 'sortstop', function( $el ) {
+			const index = $el.index();
+			let fieldData = getFieldData( $el );
+			const old = fieldData.manual_query.splice( state.oldRowIndex, 1 );
+			fieldData.manual_query.splice( index, 0, old.shift() );
+			saveFieldData( fieldData, $el );
+		} );
 	}
 )( jQuery );
