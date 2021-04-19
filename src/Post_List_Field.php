@@ -240,7 +240,7 @@ class Post_List_Field extends acf_field {
 			return $value;
 		}
 
-		if ( self::OPTION_QUERY_TYPE_AUTO === $value[ self::FIELD_QUERY_TYPE ] ) {
+		if ( self::OPTION_QUERY_TYPE_AUTO === ( $value[ self::FIELD_QUERY_TYPE ] ?? '' ) ) {
 			return $this->get_posts_from_query( $value );
 		}
 
