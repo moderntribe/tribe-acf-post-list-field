@@ -206,6 +206,11 @@
 		 * Store the index of the row as it's being dragged
 		 */
 		acf.addAction( 'sortstart', function( $el ) {
+			// Skip if this is not an ACF post list field
+			if ( $el.closest( '.acf-field-tribe-post-list' ).length === 0 ) {
+				return;
+			}
+
 			state.oldRowIndex = $el.index();
 		} );
 
@@ -213,8 +218,17 @@
 		 * Move the position of the dragged row
 		 */
 		acf.addAction( 'sortstop', function( $el ) {
+			// Skip if this is not an ACF post list field
+			if ( $el.closest( '.acf-field-tribe-post-list' ).length === 0 ) {
+				return;
+			}
+
 			const index = $el.index();
 			let fieldData = getFieldData( $el );
+			if ( !fieldData.manual_query.length ) {
+				return;
+			}
+
 			const old = fieldData.manual_query.splice( state.oldRowIndex, 1 );
 			fieldData.manual_query.splice( index, 0, old.shift() );
 			saveFieldData( fieldData, $el );
