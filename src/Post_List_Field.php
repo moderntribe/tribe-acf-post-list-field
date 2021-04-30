@@ -34,6 +34,7 @@ class Post_List_Field extends acf_field {
 
 	// Manual Options
 	public const OPTION_ALLOW_OVERRIDE = 'allow_override';
+	public const OPTION_BUTTON_LABEL   = 'button_label';
 
 	// Rendered Options
 	public const FIELD_QUERY_TYPE         = 'query_type';
@@ -92,6 +93,7 @@ class Post_List_Field extends acf_field {
 			self::SETTINGS_FIELD_POST_TYPES_ALLOWED_MANUAL => [],
 			self::SETTINGS_FIELD_TAXONOMIES_ALLOWED        => [],
 			self::OPTION_ALLOW_OVERRIDE                    => true,
+			self::OPTION_BUTTON_LABEL                      => __( 'Add Row', 'tribe' ),
 			self::FIELD_QUERY_LIMIT                        => 5,
 			self::FIELD_QUERY_TYPE                         => self::OPTION_QUERY_TYPE_AUTO,
 			self::FIELD_QUERY_TERMS                        => [],
@@ -521,6 +523,7 @@ class Post_List_Field extends acf_field {
 			'name'              => self::FIELD_MANUAL_QUERY,
 			'key'               => self::FIELD_MANUAL_QUERY,
 			'label'             => __( 'Manual Items', 'tribe' ),
+			'button_label'      => $field[ self::OPTION_BUTTON_LABEL ] ?? $this->defaults[ self::OPTION_BUTTON_LABEL ],
 			'type'              => 'repeater',
 			'value'             => $field['value'][ self::FIELD_MANUAL_QUERY ] ?? $field[ self::FIELD_MANUAL_QUERY ] ?? [],
 			'conditional_logic' => [
