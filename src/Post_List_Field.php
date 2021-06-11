@@ -1,4 +1,4 @@
-<?php declare( strict_types=1 );
+<?php declare(strict_types=1);
 
 namespace Tribe\ACF_Post_List;
 
@@ -80,7 +80,7 @@ class Post_List_Field extends acf_field {
 		$this->settings = $settings;
 	}
 
-	public function initialize() {
+	public function initialize(): void {
 		parent::initialize();
 		$this->name     = self::NAME;
 		$this->label    = __( 'Tribe Post List', 'tribe' );
@@ -265,6 +265,8 @@ class Post_List_Field extends acf_field {
 	/**
 	 * Returns posts selected by the user.
 	 *
+	 * @param $value
+	 *
 	 * @return array
 	 */
 	private function get_manually_selected_posts( $value ): array {
@@ -279,11 +281,12 @@ class Post_List_Field extends acf_field {
 		foreach ( $manual_rows as $row ) {
 			$item = [];
 
-			if ( ! $row[ self::FIELD_MANUAL_POST ] && ! $row[ self::FIELD_MANUAL_TOGGLE ] ) {
-				continue; //no post and no override/custom
+			// No post and no override/custom
+			if ( empty( $row[ self::FIELD_MANUAL_POST ] ) && empty( $row[ self::FIELD_MANUAL_TOGGLE ] ) ) {
+				continue;
 			}
 
-			//Get manually selected post
+			// Get manually selected post
 			if ( $row[ self::FIELD_MANUAL_POST ] ) {
 				$manual_post = get_post( $row[ self::FIELD_MANUAL_POST ] );
 
@@ -294,12 +297,12 @@ class Post_List_Field extends acf_field {
 				$item = $this->format_post( $manual_post );
 			}
 
-			//build custom or overwrite selected post above
+			// Build custom or overwrite selected post above
 			if ( $row[ self::FIELD_MANUAL_TOGGLE ] ) {
 				$item = $this->maybe_overwrite_values( $row, $item );
 			}
 
-			//Check if we have data for this post to remove any empty rows
+			// Check if we have data for this post to remove any empty rows
 			if ( ! $item || ! $this->is_valid_post( $item ) ) {
 				continue;
 			}
@@ -615,10 +618,10 @@ class Post_List_Field extends acf_field {
 							'value'    => '1',
 						],
 						[
-							'field' => self::FIELD_MANUAL_LINK_TOGGLE,
+							'field'    => self::FIELD_MANUAL_LINK_TOGGLE,
 							'operator' => '!=',
-							'value' => '1'
-						]
+							'value'    => '1',
+						],
 					],
 				],
 				[
