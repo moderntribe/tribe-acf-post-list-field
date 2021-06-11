@@ -365,6 +365,12 @@ class Post_List_Field extends acf_field {
 	private function get_posts_from_query( $value ): array {
 		$post_types = (array) ( $value[ self::FIELD_QUERY_POST_TYPES ] ?? [] ) ?: ( $value[ self::SETTINGS_FIELD_POST_TYPES_ALLOWED ] ?? [] );
 		$tax_query  = $this->get_tax_query_args( $value );
+		$limit      = $value[ self::FIELD_QUERY_LIMIT ] ?? self::SETTINGS_FIELD_LIMIT_MIN;
+
+		// Allow user to select no posts.
+		if ( 0 === (int) $limit ) {
+			return [];
+		}
 
 		$args = [
 			'post_type'      => $post_types,
@@ -372,7 +378,7 @@ class Post_List_Field extends acf_field {
 				'relation' => 'AND',
 			],
 			'post_status'    => 'publish',
-			'posts_per_page' => $value[ self::FIELD_QUERY_LIMIT ] ?? self::SETTINGS_FIELD_LIMIT_MIN,
+			'posts_per_page' => $limit,
 		];
 
 		foreach ( $tax_query as $taxonomy => $ids ) {
