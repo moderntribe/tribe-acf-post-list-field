@@ -1,10 +1,10 @@
-<?php declare( strict_types=1 );
+<?php declare(strict_types=1);
 
 namespace Tribe\ACF_Post_List;
 
-use WP_Post;
-use stdClass;
 use acf_field;
+use stdClass;
+use WP_Post;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -75,12 +75,12 @@ class Post_List_Field extends acf_field {
 	 * @param  array                       $settings
 	 */
 	public function __construct( Cache $cache, array $settings ) {
-		parent::__construct();
 		$this->cache    = $cache;
 		$this->settings = $settings;
+		parent::__construct();
 	}
 
-	public function initialize() {
+	public function initialize(): void {
 		parent::initialize();
 		$this->name     = self::NAME;
 		$this->label    = __( 'Tribe Post List', 'tribe' );
@@ -208,9 +208,12 @@ class Post_List_Field extends acf_field {
 	}
 
 	/**
-	 * This filter is applied to the $value after it is loaded from the db
+	 * This filter is applied to the $value after it is loaded from the db.
 	 *
-	 * @filter    load_value
+	 * If there is no value (e.g. when a block is initially loaded), replace the default values
+	 * with data from the field itself.
+	 *
+	 * @filter    acf/load_value
 	 *
 	 * @param  mixed  $value    The value found in the database
 	 * @param  mixed  $post_id  The $post_id from which the value was loaded
@@ -220,7 +223,7 @@ class Post_List_Field extends acf_field {
 	 */
 	public function load_value( $value, $post_id, $field ) {
 		if ( ! $value ) {
-			$value = $this->defaults;
+			$value = array_replace( $this->defaults, array_intersect_key( $field, $this->defaults ) );
 		}
 
 		return $value;
@@ -229,7 +232,7 @@ class Post_List_Field extends acf_field {
 	/**
 	 * This filter is applied to the $value after it is loaded from the db and before it is returned to the template
 	 *
-	 * @filter     format_value
+	 * @filter     acf/format_value
 	 *
 	 * @param  mixed  $value    The value which was loaded from the database
 	 * @param  mixed  $post_id  The $post_id from which the value was loaded
@@ -265,6 +268,8 @@ class Post_List_Field extends acf_field {
 	/**
 	 * Returns posts selected by the user.
 	 *
+	 * @param $value
+	 *
 	 * @return array
 	 */
 	private function get_manually_selected_posts( $value ): array {
@@ -279,11 +284,12 @@ class Post_List_Field extends acf_field {
 		foreach ( $manual_rows as $row ) {
 			$item = [];
 
-			if ( ! $row[ self::FIELD_MANUAL_POST ] && ! $row[ self::FIELD_MANUAL_TOGGLE ] ) {
-				continue; //no post and no override/custom
+			// No post and no override/custom
+			if ( empty( $row[ self::FIELD_MANUAL_POST ] ) && empty( $row[ self::FIELD_MANUAL_TOGGLE ] ) ) {
+				continue;
 			}
 
-			//Get manually selected post
+			// Get manually selected post
 			if ( $row[ self::FIELD_MANUAL_POST ] ) {
 				$manual_post = get_post( $row[ self::FIELD_MANUAL_POST ] );
 
@@ -294,12 +300,12 @@ class Post_List_Field extends acf_field {
 				$item = $this->format_post( $manual_post );
 			}
 
-			//build custom or overwrite selected post above
+			// Build custom or overwrite selected post above
 			if ( $row[ self::FIELD_MANUAL_TOGGLE ] ) {
 				$item = $this->maybe_overwrite_values( $row, $item );
 			}
 
-			//Check if we have data for this post to remove any empty rows
+			// Check if we have data for this post to remove any empty rows
 			if ( ! $item || ! $this->is_valid_post( $item ) ) {
 				continue;
 			}
@@ -357,8 +363,14 @@ class Post_List_Field extends acf_field {
 	 * @return array
 	 */
 	private function get_posts_from_query( $value ): array {
-		$post_types = (array) ( $value[ self::FIELD_QUERY_POST_TYPES ] ?? [] );
+		$post_types = (array) ( $value[ self::FIELD_QUERY_POST_TYPES ] ?? [] ) ?: ( $value[ self::SETTINGS_FIELD_POST_TYPES_ALLOWED ] ?? [] );
 		$tax_query  = $this->get_tax_query_args( $value );
+		$limit      = $value[ self::FIELD_QUERY_LIMIT ] ?? self::SETTINGS_FIELD_LIMIT_MIN;
+
+		// Allow user to select no posts.
+		if ( 0 === (int) $limit ) {
+			return [];
+		}
 
 		$args = [
 			'post_type'      => $post_types,
@@ -366,7 +378,7 @@ class Post_List_Field extends acf_field {
 				'relation' => 'AND',
 			],
 			'post_status'    => 'publish',
-			'posts_per_page' => $value[ self::FIELD_QUERY_LIMIT ] ?? self::SETTINGS_FIELD_LIMIT_MIN,
+			'posts_per_page' => $limit,
 		];
 
 		foreach ( $tax_query as $taxonomy => $ids ) {
@@ -615,10 +627,10 @@ class Post_List_Field extends acf_field {
 							'value'    => '1',
 						],
 						[
-							'field' => self::FIELD_MANUAL_LINK_TOGGLE,
+							'field'    => self::FIELD_MANUAL_LINK_TOGGLE,
 							'operator' => '!=',
-							'value' => '1'
-						]
+							'value'    => '1',
+						],
 					],
 				],
 				[
