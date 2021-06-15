@@ -1,7 +1,6 @@
 {
   "name": "moderntribe/tribe-acf-post-list-field",
   "description": "A post list field type for Advanced Custom Fields",
-  "version": "2.2.2",
   "type": "wordpress-plugin",
   "authors": [
     {
