@@ -285,7 +285,7 @@ class Post_List_Field extends acf_field {
 			$item = [];
 
 			// No post and no override/custom
-			if ( empty( $row[ self::FIELD_MANUAL_POST ] ) && empty( $row[ self::FIELD_MANUAL_TOGGLE ] ) ) {
+			if ( empty( $row[ self::FIELD_MANUAL_POST ] ) || empty( $row[ self::FIELD_MANUAL_TOGGLE ] ) ) {
 				continue;
 			}
 
@@ -570,6 +570,12 @@ class Post_List_Field extends acf_field {
 					'name'         => self::FIELD_MANUAL_TOGGLE,
 					'key'          => self::FIELD_MANUAL_TOGGLE,
 					'type'         => 'true_false',
+					'conditional_logic' => [
+						[
+							'field'    => self::FIELD_MANUAL_POST,
+							'operator' => '!=empty',
+						],
+					],
 				],
 				[
 					'label'             => __( 'Title', 'tribe' ),
