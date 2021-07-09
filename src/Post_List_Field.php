@@ -285,7 +285,7 @@ class Post_List_Field extends acf_field {
 			$item = [];
 
 			// No post and no override/custom
-			if ( empty( $row[ self::FIELD_MANUAL_POST ] ) || empty( $row[ self::FIELD_MANUAL_TOGGLE ] ) ) {
+			if ( empty( $row[ self::FIELD_MANUAL_POST ] ) && empty( $row[ self::FIELD_MANUAL_TOGGLE ] ) ) {
 				continue;
 			}
 
