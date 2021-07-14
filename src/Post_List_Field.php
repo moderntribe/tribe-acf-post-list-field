@@ -17,7 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Post_List_Field extends acf_field {
 
-	public const NAME = 'tribe_post_list';
+	public const NAME             = 'tribe_post_list';
+	public const MANUAL_POST_TYPE = 'tribe_curated_post';
 
 	// Admin options
 	public const SETTINGS_FIELD_AVAILABLE_TYPES = 'available_types';
@@ -284,13 +285,8 @@ class Post_List_Field extends acf_field {
 		foreach ( $manual_rows as $row ) {
 			$item = [];
 
-			// No post and no override/custom
-			if ( empty( $row[ self::FIELD_MANUAL_POST ] ) || empty( $row[ self::FIELD_MANUAL_TOGGLE ] ) ) {
-				continue;
-			}
-
 			// Get manually selected post
-			if ( $row[ self::FIELD_MANUAL_POST ] ) {
+			if ( ! empty( $row[ self::FIELD_MANUAL_POST ] ) ) {
 				$manual_post = get_post( $row[ self::FIELD_MANUAL_POST ] );
 
 				if ( ! $manual_post ) {
@@ -301,7 +297,7 @@ class Post_List_Field extends acf_field {
 			}
 
 			// Build custom or overwrite selected post above
-			if ( $row[ self::FIELD_MANUAL_TOGGLE ] ) {
+			if ( ! empty( $row[ self::FIELD_MANUAL_TOGGLE ] ) ) {
 				$item = $this->maybe_overwrite_values( $row, $item );
 			}
 
@@ -317,7 +313,7 @@ class Post_List_Field extends acf_field {
 	}
 
 	/**
-	 * Replace a post object's content with that manually entered by the user.
+	 * Build or replace a post object's content with that manually entered by the user.
 	 *
 	 * @param  array  $repeater    The ACF repeater data.
 	 * @param  array  $post_array  The post array to replace or build.
@@ -325,10 +321,13 @@ class Post_List_Field extends acf_field {
 	 * @return array
 	 */
 	private function maybe_overwrite_values( array $repeater = [], $post_array = [] ): array {
-		$post_array['title']    = ( $repeater[ self::FIELD_MANUAL_TITLE ] ?? '' ) ?: $post_array['title'] ?? '';
-		$post_array['excerpt']  = ( $repeater[ self::FIELD_MANUAL_EXCERPT ] ?? '' ) ?: $post_array['excerpt'] ?? '';
-		$post_array['image_id'] = (int) ( $repeater[ self::FIELD_MANUAL_THUMBNAIL ] ?? '' ) ?: $post_array['image_id'] ?? 0;
-		$post_array['link']     = ( $repeater[ self::FIELD_MANUAL_CTA ] ?? [] ) ?: $post_array['link'] ?? [];
+		$post_array['post_id']   = $post_array['post_id'] ?? 0;
+		$post_array['content']   = $post_array['content'] ?? '';
+		$post_array['post_type'] = $post_array['post_type'] ?? self::MANUAL_POST_TYPE;
+		$post_array['title']     = ( $repeater[ self::FIELD_MANUAL_TITLE ] ?? '' ) ?: $post_array['title'] ?? '';
+		$post_array['excerpt']   = ( $repeater[ self::FIELD_MANUAL_EXCERPT ] ?? '' ) ?: $post_array['excerpt'] ?? '';
+		$post_array['image_id']  = (int) ( $repeater[ self::FIELD_MANUAL_THUMBNAIL ] ?? '' ) ?: $post_array['image_id'] ?? 0;
+		$post_array['link']      = ( $repeater[ self::FIELD_MANUAL_CTA ] ?? [] ) ?: $post_array['link'] ?? [];
 
 		// Allow the user to have a post with no hyperlink by creating empty defaults
 		$disable_hyperlink = (bool) ( $repeater[ self::FIELD_MANUAL_LINK_TOGGLE ] ?? false );
@@ -570,12 +569,6 @@ class Post_List_Field extends acf_field {
 					'name'         => self::FIELD_MANUAL_TOGGLE,
 					'key'          => self::FIELD_MANUAL_TOGGLE,
 					'type'         => 'true_false',
-					'conditional_logic' => [
-						[
-							'field'    => self::FIELD_MANUAL_POST,
-							'operator' => '!=empty',
-						],
-					],
 				],
 				[
 					'label'             => __( 'Title', 'tribe' ),
@@ -605,10 +598,7 @@ class Post_List_Field extends acf_field {
 				],
 				[
 					'label'             => __( 'Disable hyperlink', 'tribe' ),
-					'instructions'      => __(
-						'No link will be output',
-						'tribe'
-					),
+					'instructions'      => __( 'No link will be output', 'tribe' ),
 					'name'              => self::FIELD_MANUAL_LINK_TOGGLE,
 					'key'               => self::FIELD_MANUAL_LINK_TOGGLE,
 					'type'              => 'true_false',
@@ -656,7 +646,7 @@ class Post_List_Field extends acf_field {
 			],
 		];
 
-		return apply_filters( 'tribe/acf_post_list/manual_fields_config', $config );
+		return apply_filters( 'tribe/acf_post_list/manual_fields_config', $config, $field );
 	}
 
 	/**
@@ -752,7 +742,7 @@ class Post_List_Field extends acf_field {
 			],
 		];
 
-		return apply_filters( 'tribe/acf_post_list/auto_config', $config );
+		return apply_filters( 'tribe/acf_post_list/auto_config', $config, $post_types_allowed, $field );
 	}
 
 	/**
