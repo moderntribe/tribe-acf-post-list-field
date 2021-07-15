@@ -102,27 +102,28 @@
 		/**
 		 * Build the structure for the manual post query data.
 		 *
-		 * @param {object} initialData
+		 * @param {Object[]} initialData
 		 * @param {object} field
-		 * @param {string} index
-		 * @param {string | object} value
+		 * @param {number} index
+		 * @param {string | Object[]} value
 		 */
-		const createManualQuery = function ( initialData, field, index, value ) {
+		const createManualQuery = function( initialData, field, index, value ) {
 			const newEntry = {
 				// Defaults:
 				manual_toggle: 0,
 				manual_link_toggle: 0,
 				manual_cta: {},
 				// Initial data
-				...initialData[index],
+				...initialData[ index ],
 				// New value
-				[field.data.key]: value,
+				[ field.data.key ]: value,
 			};
 
-			return {
-				...initialData,
-				[index]: newEntry,
-			};
+			const data = [ ...initialData ];
+
+			data[ index ] = newEntry;
+
+			return data;
 		};
 
 		/**
