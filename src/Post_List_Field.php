@@ -3,7 +3,6 @@
 namespace Tribe\ACF_Post_List;
 
 use acf_field;
-use stdClass;
 use WP_Post;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -99,8 +98,7 @@ class Post_List_Field extends acf_field {
 			self::FIELD_QUERY_TYPE                         => self::OPTION_QUERY_TYPE_AUTO,
 			self::FIELD_QUERY_TERMS                        => [],
 			self::FIELD_QUERY_POST_TYPES                   => [],
-			// Properly converts into JSON object
-			self::FIELD_MANUAL_QUERY                       => new stdClass(),
+			self::FIELD_MANUAL_QUERY                       => [],
 		];
 		$this->add_field_groups();
 	}
