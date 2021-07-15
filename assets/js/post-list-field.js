@@ -1,15 +1,50 @@
+/* global acf, jQuery */
 (
-	function ( $ ) {
-
+	function( $ ) {
 		// Global as set via wp_localize_script()
-		var postListFieldConfig = window.TRIBE_POST_LIST_CONFIG || [];
+		const postListFieldConfig = window.TRIBE_POST_LIST_CONFIG || [];
 
 		const state = {
 			oldRowIndex: 0,
 		};
 
+		/**
+         * Get the jQuery field object.
+         *
+         * @param {jQuery} $field
+         *
+         * @returns {*|Window.jQuery|HTMLElement}
+         */
+		const getFieldObject = function( $field ) {
+			const container = $field.closest( '[data-type="tribe_post_list"]' );
+			return $( '[data-name="tribe-post-list"]', container );
+		};
+
+		/**
+         * Retrieve the JSON parsed hidden input data.
+         *
+         * @param {jQuery} $field
+         *
+         * @returns {any}
+         */
+		const getFieldData = function( $field ) {
+			return JSON.parse( getFieldObject( $field ).val() );
+		};
+
+		/**
+         * Save the field data.
+         *
+         * @param {object} fieldData
+         * @param {jQuery} $field
+         * @returns {*|string|jQuery}
+         */
+		const saveFieldData = function( fieldData, $field ) {
+			return getFieldObject( $field ).val( JSON.stringify( fieldData ) );
+		};
+
 		// Append the group's field key to the ajax request
-		acf.add_filter( 'select2_ajax_data', function ( data, args, $input, field, instance ) {
+		// eslint-disable-next-line no-unused-vars
+		acf.add_filter( 'select2_ajax_data', function( data, args, $input, field, instance ) {
 			const fields = document.querySelectorAll( '[data-type=\'tribe_post_list\']' );
 			const input = document.querySelector( '[data-name=tribe-post-list]' );
 
@@ -25,17 +60,16 @@
 		} );
 
 		// Register event listeners for our select2 inputs.
-		acf.addAction( 'select2_init', function ( $select, args, settings, field ) {
-			const allowedFields = ['query_post_types', 'query_terms'];
+		acf.addAction( 'select2_init', function( $select, args, settings, field ) {
+			const allowedFields = [ 'query_post_types', 'query_terms' ];
 
-			if ( !allowedFields.includes( field.data.name ) ) {
+			if ( ! allowedFields.includes( field.data.name ) ) {
 				return;
 			}
 
-			$select.bind( 'change', function ( e ) {
+			$select.bind( 'change', function( e ) {
 				const selected = $( '#' + e.target.getAttribute( 'id' ) ).select2( 'data' );
-
-				let fieldData = getFieldData( field.$el );
+				const fieldData = getFieldData( field.$el );
 
 				// Add the terms to the hidden field.
 				if ( 'query_terms' === field.data.name ) {
@@ -52,46 +86,12 @@
 		} );
 
 		/**
-		 * Get the jQuery field object.
-		 *
-		 * @param {jQuery} $field
-		 *
-		 * @returns {*|Window.jQuery|HTMLElement}
-		 */
-		const getFieldObject = function ( $field ) {
-			const container = $field.closest( '[data-type="tribe_post_list"]' );
-			return $( '[data-name="tribe-post-list"]', container );
-		};
-
-		/**
-		 * Retrieve the JSON parsed hidden input data.
-		 *
-		 * @param {jQuery} $field
-		 *
-		 * @returns {any}
-		 */
-		const getFieldData = function ( $field ) {
-			return JSON.parse( getFieldObject( $field ).val() );
-		};
-
-		/**
-		 * Save the field data.
-		 *
-		 * @param {object} fieldData
-		 * @param {jQuery} $field
-		 * @returns {*|string|jQuery}
-		 */
-		const saveFieldData = function ( fieldData, $field ) {
-			return getFieldObject( $field ).val( JSON.stringify( fieldData ) );
-		};
-
-		/**
 		 * Return formatted for an ACF link field.
 		 *
 		 * @param {object} field
 		 * @returns {{title, url, target}}
 		 */
-		const getLinkValue = function ( field ) {
+		const getLinkValue = function( field ) {
 			return {
 				title: field.$el.find( '.input-title' ).val(),
 				url: field.$el.find( '.input-url' ).val(),
@@ -132,11 +132,11 @@
 		 * @param {object} field
 		 * @param {boolean} isManualQuery
 		 */
-		const persistValues = function ( field, isManualQuery = false ) {
+		const persistValues = function( field, isManualQuery = false ) {
 			// Only way to get the position, not present in field object
 			const index = field.$el.closest( '.acf-row' ).index();
 
-			return function ( e ) {
+			return function( e ) {
 				let val = e.target.value;
 
 				switch ( field.data.type ) {
@@ -148,12 +148,12 @@
 						break;
 				}
 
-				let fieldData = getFieldData( field.$el );
+				const fieldData = getFieldData( field.$el );
 
 				if ( isManualQuery ) {
 					fieldData.manual_query = createManualQuery( fieldData.manual_query, field, index, val );
 				} else {
-					fieldData[field.data.key] = val;
+					fieldData[ field.data.key ] = val;
 				}
 
 				saveFieldData( fieldData, field.$el );
@@ -165,7 +165,7 @@
 		 *
 		 * @param $el The row
 		 */
-		const removeManualQuery = function ( $el ) {
+		const removeManualQuery = function( $el ) {
 			// Skip if this is not an ACF post list field
 			if ( $el.parents( '.acf-field-tribe-post-list' ).length === 0 ) {
 				return;
@@ -177,7 +177,7 @@
 				return;
 			}
 
-			let fieldData = getFieldData( $el );
+			const fieldData = getFieldData( $el );
 			fieldData.manual_query.splice( index, 1 );
 			saveFieldData( fieldData, $el );
 		};
@@ -188,14 +188,14 @@
 		 *
 		 * @param {object} field
 		 */
-		acf.addAction( 'new_field', function ( field ) {
+		acf.addAction( 'new_field', function( field ) {
 			const keys = Object.keys( postListFieldConfig.listenerFields );
 
-			if ( !keys.includes( field.data.key ) ) {
+			if ( ! keys.includes( field.data.key ) ) {
 				return;
 			}
 
-			field.$el.bind( 'change input', persistValues( field, postListFieldConfig.listenerFields[field.data.key] ) );
+			field.$el.bind( 'change input', persistValues( field, postListFieldConfig.listenerFields[ field.data.key ] ) );
 		} );
 
 		/**
@@ -225,8 +225,8 @@
 			}
 
 			const index = $el.index();
-			let fieldData = getFieldData( $el );
-			if ( !fieldData.manual_query.length ) {
+			const fieldData = getFieldData( $el );
+			if ( ! fieldData.manual_query.length ) {
 				return;
 			}
 
