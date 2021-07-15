@@ -4,7 +4,7 @@
 Plugin Name: Advanced Custom Fields: Tribe Post List Field
 Plugin URI: https://tri.be
 Description: A post list field type for advanced custom fields
-Version: 2.2.4
+Version: 2.2.5
 Author: Modern Tribe
 Author URI: https://tri.be
 */
@@ -32,7 +32,7 @@ require_once $autoload;
 function tribe_acf_post_list(): void {
 
 	$settings = [
-		'version' => '2.2.4',
+		'version' => '2.2.5',
 		'url'     => plugin_dir_url( __FILE__ ),
 		'path'    => plugin_dir_path( __FILE__ ),
 	];
