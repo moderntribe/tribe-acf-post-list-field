@@ -261,7 +261,12 @@ class Post_List_Field extends acf_field {
 	 * @return mixed
 	 */
 	public function update_value( $data, $post_id, $field ) {
-		return json_decode( wp_unslash( $data ), true );
+		// WordPress runs wp_slash() on this data on auto save but ACF does not via ajax calls
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			$data = wp_unslash( $data );
+		}
+
+		return json_decode( $data, true );
 	}
 
 	/**
