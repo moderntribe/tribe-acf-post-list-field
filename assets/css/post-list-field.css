@@ -1,5 +1,16 @@
 .auto-query-row {
-    padding: 16px 20px;
-    border: #ccd0d4 solid 1px;
-    margin:-1px 5px 0;
+	padding: 16px 20px;
+	border: #ccd0d4 solid 1px;
+	margin: -1px 5px 0;
+}
+
+/*
+    Adding a row in the repeater via the + sign causes field order to
+    get messed up and also overwrites existing block data since the
+    indexes become shared.
+
+    Disable for now until we can figure out a better solution.
+ */
+.acf-field-manual-query .acf-repeater .acf-row-handle .acf-icon.-plus {
+	display: none !important;
 }
