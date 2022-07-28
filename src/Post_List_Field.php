@@ -31,6 +31,7 @@ class Post_List_Field extends acf_field {
 	public const SETTINGS_FIELD_POST_TYPES_ALLOWED        = 'post_types';
 	public const SETTINGS_FIELD_POST_TYPES_ALLOWED_MANUAL = 'post_types_manual';
 	public const SETTINGS_FIELD_TAXONOMIES_ALLOWED        = 'taxonomies';
+	public const SETTINGS_FIELD_TERMS_PER_PAGE            = 'terms_per_page';
 
 	// Manual Options
 	public const OPTION_ALLOW_OVERRIDE = 'allow_override';
@@ -92,6 +93,7 @@ class Post_List_Field extends acf_field {
 			self::SETTINGS_FIELD_POST_TYPES_ALLOWED        => [],
 			self::SETTINGS_FIELD_POST_TYPES_ALLOWED_MANUAL => [],
 			self::SETTINGS_FIELD_TAXONOMIES_ALLOWED        => [],
+			self::SETTINGS_FIELD_TERMS_PER_PAGE            => Multiple_Taxonomy_Field::DEFAULT_TERMS_PER_PAGE,
 			self::OPTION_ALLOW_OVERRIDE                    => true,
 			self::OPTION_BUTTON_LABEL                      => __( 'Add Row', 'tribe' ),
 			self::FIELD_QUERY_LIMIT                        => 5,
@@ -170,6 +172,13 @@ class Post_List_Field extends acf_field {
 			'multiple'     => 1,
 			'ui'           => 1,
 			'choices'      => acf_get_taxonomy_labels(),
+		] );
+
+		acf_render_field_setting( $field, [
+			'label'        => __( 'Terms per page' ),
+			'instructions' => __( 'How many terms to show in the select at a time', 'tribe' ),
+			'type'         => 'number',
+			'name'         => self::SETTINGS_FIELD_TERMS_PER_PAGE,
 		] );
 	}
 
@@ -353,10 +362,10 @@ class Post_List_Field extends acf_field {
 	 */
 	private function is_valid_post( array $post_array ): bool {
 		return ! ( empty( $post_array['title'] )
-				   && empty( $post_array['excerpt'] )
-				   &&
-				   ! $post_array['image_id']
-				   && empty( $post_array['link'] ) );
+		           && empty( $post_array['excerpt'] )
+		           &&
+		           ! $post_array['image_id']
+		           && empty( $post_array['link'] ) );
 	}
 
 	/**
@@ -726,6 +735,7 @@ class Post_List_Field extends acf_field {
 				'name'              => self::FIELD_QUERY_TERMS,
 				'key'               => self::FIELD_QUERY_TERMS,
 				'type'              => Multiple_Taxonomy_Field::NAME,
+				'terms_per_page'    => $field[ self::SETTINGS_FIELD_TERMS_PER_PAGE ] ?? $this->defaults[ self::SETTINGS_FIELD_TERMS_PER_PAGE ],
 				'multiple'          => true,
 				'ui'                => true,
 				'taxonomies'        => [], // Pulled via ajax

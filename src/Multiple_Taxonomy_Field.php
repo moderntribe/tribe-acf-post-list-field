@@ -1,4 +1,4 @@
-<?php declare( strict_types=1 );
+<?php declare(strict_types=1);
 
 namespace Tribe\ACF_Post_List;
 
@@ -17,7 +17,7 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 
 	public const NAME = 'tribe_multiple_taxonomy';
 
-	public const TERMS_PER_PAGE = 20;
+	public const DEFAULT_TERMS_PER_PAGE = 20;
 
 	/**
 	 * @var \Tribe\ACF_Post_List\Cache
@@ -43,18 +43,19 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 		$this->name     = self::NAME;
 		$this->label    = __( 'Tribe Multiple Term Selector', 'tribe' );
 		$this->defaults = [
-			'taxonomies'    => [ 'category' ],
-			'field_type'    => 'select',
-			'multiple'      => 1,
-			'allow_null'    => 0,
-			'return_format' => 'id',
-			'add_term'      => 0,
-			'load_terms'    => 0,
-			'save_terms'    => 0,
-			'ui'            => 1,
-			'ajax'          => 1,
-			'ajax_action'   => sprintf( 'acf/fields/%s/query', self::NAME ),
-			'placeholder'   => 'Select Term',
+			'taxonomies'     => [ 'category' ],
+			'field_type'     => 'select',
+			'multiple'       => 1,
+			'allow_null'     => 0,
+			'return_format'  => 'id',
+			'add_term'       => 0,
+			'load_terms'     => 0,
+			'save_terms'     => 0,
+			'ui'             => 1,
+			'ajax'           => 1,
+			'terms_per_page' => self::DEFAULT_TERMS_PER_PAGE,
+			'ajax_action'    => sprintf( 'acf/fields/%s/query', self::NAME ),
+			'placeholder'    => 'Select Term',
 		];
 		$this->hooks();
 	}
@@ -74,7 +75,7 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 
 	public function wrapper_attributes( $wrapper, $field ) {
 		if ( self::NAME === $field['type'] ) {
-			$wrapper['class']     .= ' acf-field-taxonomy';
+			$wrapper['class']    .= ' acf-field-taxonomy';
 			$wrapper['data-type'] = 'taxonomy';
 		}
 
@@ -107,13 +108,14 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 
 		$results = [];
 		$args    = [];
-		$limit   = self::TERMS_PER_PAGE;
-		$offset  = self::TERMS_PER_PAGE * ( $options['paged'] - 1 );
+		$limit   = $field['terms_per_page'];
+		$offset  = $limit * ( $options['paged'] - 1 );
 
 		// Hide Empty.
 		$args['hide_empty'] = false;
 		$args['number']     = $limit;
 		$args['offset']     = $offset;
+		$args['orderby']    = 'taxonomy';
 
 		// Pagination
 		// Don't bother for hierarchical terms, we will need to load all terms anyway.
@@ -171,11 +173,12 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 
 		// Vars.
 		$div = [
-			'class'           => 'acf-taxonomy-field acf-soh',
-			'data-save'       => $field['save_terms'],
-			'data-type'       => $field['field_type'],
-			'data-taxonomies' => $field['taxonomies'],
-			'data-ftype'      => 'select',
+			'class'               => 'acf-taxonomy-field acf-soh',
+			'data-save'           => $field['save_terms'],
+			'data-type'           => $field['field_type'],
+			'data-taxonomies'     => $field['taxonomies'],
+			'data-ftype'          => 'select',
+			'data-terms-per-page' => $field['terms_per_page'],
 		];
 
 		?>
@@ -198,7 +201,6 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 		$field['ui']       = 1;
 		$field['ajax']     = 1;
 		$field['multiple'] = 1;
-		$field['choices']  = [];
 
 		$choices = [];
 
@@ -211,7 +213,6 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 			foreach ( $terms as $term ) {
 				$choices[ $term->term_id ] = $term->name;
 			}
-
 		}
 
 		$field['choices'] = $choices;
@@ -279,6 +280,13 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 				'id'     => __( 'Term ID', 'tribe' ),
 			],
 			'layout'       => 'horizontal',
+		] );
+
+		acf_render_field_setting( $field, [
+			'label'        => __( 'Terms per page', 'tribe' ),
+			'instructions' => __( 'How many terms per page to display', 'tribe' ),
+			'name'         => 'terms_per_page',
+			'type'         => 'number',
 		] );
 	}
 
