@@ -527,7 +527,7 @@ class Post_List_Field extends acf_field {
 	 */
 	private function get_manual_field_config( $field = [] ): array {
 		if ( empty( $field ) ) {
-			$field = json_decode( filter_input( INPUT_POST, 'field_data', FILTER_SANITIZE_STRING ) ?: '' );
+			$field = json_decode( htmlspecialchars( $_GET['field_data'] ?? '' ) ?: '' );
 		}
 
 		$config = [
