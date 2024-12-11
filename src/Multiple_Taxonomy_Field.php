@@ -169,18 +169,22 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 		$field['value']    = acf_get_array( $field['value'] );
 		$field['multiple'] = 0;
 
+		$nonce = wp_create_nonce( 'acf_field_' . $this->name . '_' . $field['key'] );
+
 		// Vars.
 		$div = [
 			'class'           => 'acf-taxonomy-field acf-soh',
 			'data-save'       => $field['save_terms'],
 			'data-type'       => $field['field_type'],
 			'data-taxonomies' => $field['taxonomies'],
+			'data-allow_null' => $field['allow_null'],
 			'data-ftype'      => 'select',
+			'data-nonce'      => $nonce,
 		];
 
 		?>
         <div <?php acf_esc_attrs( $div ); ?>>
-			<?php $this->render_field_select( $field ); ?>
+			<?php $this->render_field_select( $field, $nonce ); ?>
         </div>
 		<?php
 	}
@@ -190,8 +194,9 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 	 * Render the taxonomy select field.
 	 *
 	 * @param  array  $field
+	 * @param string $nonce
 	 */
-	public function render_field_select( $field ): void {
+	public function render_field_select( $field, $nonce ): void {
 
 		// Change Field into a select.
 		$field['type']     = 'select';
@@ -199,6 +204,7 @@ class Multiple_Taxonomy_Field extends acf_field_taxonomy {
 		$field['ajax']     = 1;
 		$field['multiple'] = 1;
 		$field['choices']  = [];
+		$field['nonce']    = $nonce;
 
 		$choices = [];
 
